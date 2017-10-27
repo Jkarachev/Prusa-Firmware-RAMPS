@@ -13,10 +13,10 @@ GENERAL SETTINGS
 #define DEVELOPER
 
 // Printer name
-#define CUSTOM_MENDEL_NAME "Prusa i3 MK2"
+#define CUSTOM_MENDEL_NAME "Prusa i3 MK2 Clone"
 
 // Electronics
-#define MOTHERBOARD BOARD_RAMBO_MINI_1_3
+#define MOTHERBOARD BOARD_RAMPS_13_EFB
 
 // Prusa Single extruder multiple material suport
 //#define SNMM
@@ -36,7 +36,7 @@ AXIS SETTINGS
 #ifdef SNMM
 #define DEFAULT_AXIS_STEPS_PER_UNIT   {100,100,3200/8,140}
 #else
-#define DEFAULT_AXIS_STEPS_PER_UNIT   {100,100,3200/8,161.3}
+#define DEFAULT_AXIS_STEPS_PER_UNIT   {200,200,3200/8,161.3}
 #endif
 
 
@@ -192,7 +192,7 @@ MOTOR CURRENT SETTINGS
 #define DIGIPOT_MOTOR_CURRENT_LOUD {135,135,135,135,135}
 
 // Motor Current settings for RAMBo mini PWM value = MotorCurrentSetting * 255 / range
-#if MOTHERBOARD == 102 || MOTHERBOARD == 302
+#if MOTHERBOARD == 102 || MOTHERBOARD == 302 || MOTHERBOARD == 33
 #define MOTOR_CURRENT_PWM_RANGE 2000
 #define DEFAULT_PWM_MOTOR_CURRENT  {270, 830, 450} // {XY,Z,E}
 #define DEFAULT_PWM_MOTOR_CURRENT_LOUD  {540, 830, 500} // {XY,Z,E}
@@ -285,27 +285,27 @@ PREHEAT SETTINGS
 
 #define PLA_PREHEAT_HOTEND_TEMP 215
 #define PLA_PREHEAT_HPB_TEMP 55
-#define PLA_PREHEAT_FAN_SPEED 0  
+#define PLA_PREHEAT_FAN_SPEED 0
 
 #define ABS_PREHEAT_HOTEND_TEMP 255
 #define ABS_PREHEAT_HPB_TEMP 100
-#define ABS_PREHEAT_FAN_SPEED 0 
+#define ABS_PREHEAT_FAN_SPEED 0
 
 #define HIPS_PREHEAT_HOTEND_TEMP 220
 #define HIPS_PREHEAT_HPB_TEMP 100
-#define HIPS_PREHEAT_FAN_SPEED 0 
+#define HIPS_PREHEAT_FAN_SPEED 0
 
 #define PP_PREHEAT_HOTEND_TEMP 254
 #define PP_PREHEAT_HPB_TEMP 100
-#define PP_PREHEAT_FAN_SPEED 0 
+#define PP_PREHEAT_FAN_SPEED 0
 
 #define PET_PREHEAT_HOTEND_TEMP 240
 #define PET_PREHEAT_HPB_TEMP 90
-#define PET_PREHEAT_FAN_SPEED 0 
+#define PET_PREHEAT_FAN_SPEED 0
 
 #define FLEX_PREHEAT_HOTEND_TEMP 230
 #define FLEX_PREHEAT_HPB_TEMP 50
-#define FLEX_PREHEAT_FAN_SPEED 0 
+#define FLEX_PREHEAT_FAN_SPEED 0
 
 /*------------------------------------
 THERMISTORS SETTINGS
@@ -331,7 +331,7 @@ THERMISTORS SETTINGS
 // 10 is 100k RS thermistor 198-961 (4.7k pullup)
 // 11 is 100k beta 3950 1% thermistor (4.7k pullup)
 // 12 is 100k 0603 SMD Vishay NTCS0603E3104FXT (4.7k pullup) (calibrated for Makibox hot bed)
-// 13 is 100k Hisens 3950  1% up to 300°C for hotend "Simple ONE " & "Hotend "All In ONE" 
+// 13 is 100k Hisens 3950  1% up to 300°C for hotend "Simple ONE " & "Hotend "All In ONE"
 // 20 is the PT100 circuit found in the Ultimainboard V2.x
 // 60 is 100k Maker's Tool Works Kapton Bed Thermistor beta=3950
 //
@@ -362,7 +362,7 @@ THERMISTORS SETTINGS
 #elif defined(E3D_PT100_BED_NO_AMP)
 #define TEMP_SENSOR_BED 148
 #else
-#define TEMP_SENSOR_BED 1
+#define TEMP_SENSOR_BED 11
 #endif
 
 #define STACK_GUARD_TEST_VALUE 0xA2A2
@@ -389,7 +389,7 @@ THERMISTORS SETTINGS
 #define PING_TIME_LONG 600 //10 min; used when length of commands buffer > 0 to avoid false triggering when dealing with long gcodes
 #define PING_ALLERT_PERIOD 60 //time in s
 
-#define LONG_PRESS_TIME 1000 //time in ms for button long press 
+#define LONG_PRESS_TIME 1000 //time in ms for button long press
 #define BUTTON_BLANKING_TIME 200 //time in ms for blanking after button release
 
 #define DEFAULT_PID_TEMP 210

@@ -1,43 +1,5 @@
-# Original Prusa i3 MK2 Firmware
+# Unoriginal Prusa i3 MK2 Firmware for RAMPS
 
-## General instructions
+I've got my hands on a MK42 heatbed clone, so now all I need is the software to get that sweet, sweet, autocalibration. But wait, it only runs on RAMBO boards, and you cheaped out and bought a RAMPS! Never fear, dear reader, for I know how to edit config files and copy-paste removed pinouts from the equivalent version of Marlin. I can fix this!
 
-Pre-compiled hex output on PRUSA RESEARCH site: http://prusa3d.com/downloads/firmware/
-
-Just download and flash it to the electronics
-
-
-## Build instructions
-
-### Step 1
-
-Install arduino
-
-### Step 2
-
-Remove Liquid Crystal library from your arduino or rename it
-
-### Step 3
-
-Install the arduino addon located in the root of this repo. Don't forget to install correct version!
-
-### Step 4
-
-Copy the configuration file matching your printer from variants folder to the the Firmware folder
-
-### Step 5
-
-Rename it to "Configuration_prusa.h"
-
-### Step 6
-
-Compile the firmware
-
-### Step 7
-
-Upload the firmware to board
-
-
-
-
-
+I'm porting the most recent version of the Prusa firmware to RAMPS 1.4 so that I can use it on my self-sourced i3 MK2 clone. How hard can it be?
