@@ -13,7 +13,7 @@ GENERAL SETTINGS
 #define DEVELOPER
 
 // Printer name
-#define CUSTOM_MENDEL_NAME "Prusa i3 MK2 Clone"
+#define CUSTOM_MENDEL_NAME "Dolly i3 MK2"
 
 // Electronics
 #define MOTHERBOARD BOARD_RAMPS_13_EFB
@@ -43,7 +43,7 @@ AXIS SETTINGS
 // Endstop inverting
 const bool X_MIN_ENDSTOP_INVERTING = false; // set to true to invert the logic of the endstop.
 const bool Y_MIN_ENDSTOP_INVERTING = false; // set to true to invert the logic of the endstop.
-const bool Z_MIN_ENDSTOP_INVERTING = false; // set to true to invert the logic of the endstop.
+const bool Z_MIN_ENDSTOP_INVERTING = true; // set to true to invert the logic of the endstop.
 
 // Home position
 #define MANUAL_X_HOME_POS 0
