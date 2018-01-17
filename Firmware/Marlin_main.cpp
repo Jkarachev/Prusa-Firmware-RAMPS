@@ -189,9 +189,9 @@
 // M401 - Lower z-probe if present
 // M402 - Raise z-probe if present
 // M404 - N<dia in mm> Enter the nominal filament width (3mm, 1.75mm ) or will display nominal filament width without parameters
-// M405 - Turn on Filament Sensor extrusion control.  Optional D<delay in cm> to set delay in centimeters between sensor and extruder 
-// M406 - Turn off Filament Sensor extrusion control 
-// M407 - Displays measured filament diameter 
+// M405 - Turn on Filament Sensor extrusion control.  Optional D<delay in cm> to set delay in centimeters between sensor and extruder
+// M406 - Turn off Filament Sensor extrusion control
+// M407 - Displays measured filament diameter
 // M500 - stores parameters in EEPROM
 // M501 - reads parameters from EEPROM (if you need reset them after you changed them temporarily).
 // M502 - reverts to the default "factory settings".  You still need to store them in EEPROM afterwards if you want to.
@@ -201,8 +201,11 @@
 // M600 - Pause for filament change X[pos] Y[pos] Z[relative lift] E[initial retract] L[later retract distance for removal]
 // M605 - Set dual x-carriage movement mode: S<mode> [ X<duplication x-offset> R<duplication temp offset> ]
 // M900 - Set LIN_ADVANCE options, if enabled. See Configuration_adv.h for details.
+// M906 - Set or get motor current in milliamps using axis codes X, Y, Z, E.Report values if no axis codes given.(Requires HAVE_TMC2130)
 // M907 - Set digital trimpot motor current using axis codes.
 // M908 - Control digital trimpot directly.
+// M911 - Report stepper driver overtemperature pre-warn condition. (Requires HAVE_TMC2130)
+// M912 - Clear stepper driver overtemperature pre - warn condition flag.(Requires HAVE_TMC2130)
 // M350 - Set microstepping mode.
 // M351 - Toggle MS1 MS2 pins directly.
 
@@ -220,7 +223,7 @@
 //=============================public variables=============================
 //===========================================================================
 #ifdef SDSUPPORT
-CardReader card;
+                                                      CardReader card;
 #endif
 
 unsigned long TimeSent = millis();
@@ -1021,7 +1024,7 @@ void factory_reset(char level, bool quiet)
 void setup()
 {
 	lcd_init();
-	lcd_print_at_PGM(0, 1, PSTR("   Original Prusa   "));
+	lcd_print_at_PGM(0, 1, PSTR("  Unoriginal Prusa  "));
 	lcd_print_at_PGM(0, 2, PSTR("    3D  Printers    "));
 	setup_killpin();
 	setup_powerhold();
@@ -1962,6 +1965,35 @@ bool check_commands() {
 	  return end_command_found;
 }
 
+/**
+ * TMC2130 specific sensorless homing using stallGuard2.
+ * stallGuard2 only works when in spreadCycle mode.
+ * spreadCycle and stealthChop are mutually exclusive.
+ */
+#if ENABLED(SENSORLESS_HOMING)
+void tmc2130_sensorless_homing(TMC2130Stepper &st, bool enable = true)
+{
+#if ENABLED(STEALTHCHOP)
+  if (enable)
+  {
+    st.coolstep_min_speed(1024UL * 1024UL - 1UL);
+    st.stealthChop(0);
+  }
+  else
+  {
+    st.coolstep_min_speed(0);
+    st.stealthChop(1);
+  }
+#endif
+
+  st.diag1_stall(enable ? 1 : 0);
+}
+#endif
+
+/**
+ * Home an individual "raw axis" to its endstop.
+ */
+
 void homeaxis(int axis) {
 #define HOMEAXIS_DO(LETTER) \
   ((LETTER##_MIN_PIN > -1 && LETTER##_HOME_DIR==-1) || (LETTER##_MAX_PIN > -1 && LETTER##_HOME_DIR==1))
@@ -1970,15 +2002,27 @@ void homeaxis(int axis) {
       axis==Y_AXIS ? HOMEAXIS_DO(Y) :
       axis==Z_AXIS ? HOMEAXIS_DO(Z) :
       0) {
-    int axis_home_dir = home_dir(axis);
+    int axis_home_dir = home_dir(axis); //get homing direction of axis being homed
 
-    current_position[axis] = 0;
+    // Disable stealthChop if used. Enable diag1 pin on driver.
+    #if ENABLED(SENSORLESS_HOMING)
+      #if ENABLED(X_IS_TMC2130)
+          if (axis == X_AXIS)
+            tmc2130_sensorless_homing(stepperX);
+      #endif
+      #if ENABLED(Y_IS_TMC2130)
+          if (axis == Y_AXIS)
+            tmc2130_sensorless_homing(stepperY);
+      #endif
+    #endif
+
+    current_position[axis] = 0; //tell the planner we're at 0
     plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
 
     destination[axis] = 1.5 * max_length(axis) * axis_home_dir;
     feedrate = homing_feedrate[axis];
     plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], feedrate/60, active_extruder);
-    st_synchronize();
+    st_synchronize(); //synchronize steppers
 
     current_position[axis] = 0;
     plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
@@ -1995,6 +2039,18 @@ void homeaxis(int axis) {
     feedrate = 0.0;
     endstops_hit_on_purpose();
     axis_known_position[axis] = true;
+
+    // Re-enable stealthChop if used. Disable diag1 pin on driver.
+    #if ENABLED(SENSORLESS_HOMING)
+      #if ENABLED(X_IS_TMC2130)
+          if (axis == X_AXIS)
+            tmc2130_sensorless_homing(stepperX, false);
+      #endif
+      #if ENABLED(Y_IS_TMC2130)
+          if (axis == Y_AXIS)
+            tmc2130_sensorless_homing(stepperY, false);
+      #endif
+    #endif
   }
 }
 
