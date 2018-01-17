@@ -4582,6 +4582,11 @@ Sigma_Exit:
             WRITE(SUICIDE_PIN, HIGH);
         #endif
 
+        #if ENABLED(HAVE_TMC2130)
+          delay(100);
+          tmc2130_init(); // Settings only stick when the driver has power
+        #endif
+
         #ifdef ULTIPANEL
           powersupply = true;
           LCD_MESSAGERPGM(WELCOME_MSG);
