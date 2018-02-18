@@ -319,7 +319,7 @@
 #define MSG_DEFAULT_SETTINGS_LOADED			"Defaultni nastaveni nahrano"
 #define MSG_SORTING							"Trideni souboru"
 #define MSG_FILE_INCOMPLETE					"Soubor nekompletni. Pokracovat?"
-#define MSG_WIZARD_WELCOME					"Dobry den, jsem vase tiskarna Original Prusa i3. Chcete abych Vas provedla kalibracnim procesem?"
+#define MSG_WIZARD_WELCOME					"Dobry den, jsem vase tiskarna Unoriginal Prusa i3. Chcete abych Vas provedla kalibracnim procesem?"
 #define MSG_WIZARD_QUIT						"Wizarda muzete kdykoliv znovu spustit z menu Calibration -> Wizard"
 #define MSG_WIZARD_SELFTEST					"Nejdriv pomoci selftestu zkontoluji nejcastejsi chyby vznikajici pri sestaveni tiskarny."
 #define MSG_WIZARD_CALIBRATION_FAILED		"Prosim nahlednete do manualu a opravte problem. Po te obnovte Wizarda rebootovanim tiskarny."

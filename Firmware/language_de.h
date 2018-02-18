@@ -332,7 +332,7 @@
 #define MSG_DEFAULT_SETTINGS_LOADED			"Standardeinstellungen wurden zuruckgesetzt"
 #define MSG_SORTING							"Dateien sortieren"
 #define MSG_FILE_INCOMPLETE					"Datei unvollstaend. Trotzdem fortfahren?"
-#define MSG_WIZARD_WELCOME					"Hallo, ich bin dein Original Prusa i3 Drucker. Moechten Sie meine Hilfe durch den Setup-Prozess?"
+#define MSG_WIZARD_WELCOME					"Hallo, ich bin dein Unoriginal Prusa i3 Drucker. Moechten Sie meine Hilfe durch den Setup-Prozess?"
 #define MSG_WIZARD_QUIT						"Sie koennen immer den Asistenten im Menu neu aufrufen: Kalibrierung -> Assistant"
 #define MSG_WIZARD_SELFTEST					"Zunaechst fuehre ich den Selbsttest durch um die haeufigsten Probleme bei der Aufbau zu ueberpruefen."
 #define MSG_WIZARD_CALIBRATION_FAILED		"Bitte ueberpruefen Sie unser Handbuch und beheben Sie das Problem. Fahren Sie dann mit dem Assistenten fort, indem Sie den Drucker neu starten."

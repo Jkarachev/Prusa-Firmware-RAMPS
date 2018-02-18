@@ -319,7 +319,7 @@
 #define(length=20, lines=1) MSG_SORTING							"Sorting files"
 #define(length=20, lines=2) MSG_FILE_INCOMPLETE					"File incomplete. Continue anyway?"
 #define(length=17, lines=1) MSG_WIZARD							"Wizard"
-#define(length=20, lines=7)	MSG_WIZARD_WELCOME					"Hi, I am your Original Prusa i3 printer. Would you like me to guide you through the setup process?"
+#define(length=20, lines=7)	MSG_WIZARD_WELCOME					"Hi, I am your Unoriginal Prusa i3 printer. Would you like me to guide you through the setup process?"
 #define(length=20, lines=8) MSG_WIZARD_QUIT						"You can always resume the Wizard from Calibration -> Wizard."
 #define(length=20, lines=8) MSG_WIZARD_SELFTEST					"First, I will run the selftest to check most common assembly problems."
 #define(length=20, lines=8) MSG_WIZARD_CALIBRATION_FAILED		"Please check our handbook and fix the problem. Then resume the Wizard by rebooting the printer."

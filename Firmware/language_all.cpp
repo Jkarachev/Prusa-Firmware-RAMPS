@@ -3859,12 +3859,12 @@ const char * const MSG_WIZARD_V2_CAL_2_LANG_TABLE[LANG_NUM] PROGMEM = {
 	MSG_WIZARD_V2_CAL_2_DE
 };
 
-const char MSG_WIZARD_WELCOME_EN[] PROGMEM = "Hi, I am your Original Prusa i3 printer. Would you like me to guide you through the setup process?";
-const char MSG_WIZARD_WELCOME_CZ[] PROGMEM = "Dobry den, jsem vase tiskarna Original Prusa i3. Chcete abych Vas provedla kalibracnim procesem?";
-const char MSG_WIZARD_WELCOME_IT[] PROGMEM = "Ciao, sono la tua stampante Original Prusa i3. Gradiresti aiuto attraverso il processo di configurazione?";
-const char MSG_WIZARD_WELCOME_ES[] PROGMEM = "Hola, soy tu impresora Original Prusa i3. Quieres que te guie a traves de la configuracion?";
-const char MSG_WIZARD_WELCOME_PL[] PROGMEM = "Czesc, jestem Twoja drukarka Original Prusa i3. Czy potrzebujesz pomocy z instalacja?";
-const char MSG_WIZARD_WELCOME_DE[] PROGMEM = "Hallo, ich bin dein Original Prusa i3 Drucker. Moechten Sie meine Hilfe durch den Setup-Prozess?";
+const char MSG_WIZARD_WELCOME_EN[] PROGMEM = "Hi, I am your Unoriginal Prusa i3 printer. Would you like me to guide you through the setup process?";
+const char MSG_WIZARD_WELCOME_CZ[] PROGMEM = "Dobry den, jsem vase tiskarna Unoriginal Prusa i3. Chcete abych Vas provedla kalibracnim procesem?";
+const char MSG_WIZARD_WELCOME_IT[] PROGMEM = "Ciao, sono la tua stampante Unoriginal Prusa i3. Gradiresti aiuto attraverso il processo di configurazione?";
+const char MSG_WIZARD_WELCOME_ES[] PROGMEM = "Hola, soy tu impresora Unoriginal Prusa i3. Quieres que te guie a traves de la configuracion?";
+const char MSG_WIZARD_WELCOME_PL[] PROGMEM = "Czesc, jestem Twoja drukarka Unoriginal Prusa i3. Czy potrzebujesz pomocy z instalacja?";
+const char MSG_WIZARD_WELCOME_DE[] PROGMEM = "Hallo, ich bin dein Unoriginal Prusa i3 Drucker. Moechten Sie meine Hilfe durch den Setup-Prozess?";
 const char * const MSG_WIZARD_WELCOME_LANG_TABLE[LANG_NUM] PROGMEM = {
 	MSG_WIZARD_WELCOME_EN,
 	MSG_WIZARD_WELCOME_CZ,

@@ -313,7 +313,7 @@
 #define MSG_DEFAULT_SETTINGS_LOADED			"Ajustes por defecto cargados."
 #define MSG_SORTING							"Ordenando archivos"
 #define MSG_FILE_INCOMPLETE					"Archivo imcompleto. Deseas continuar?"
-#define MSG_WIZARD_WELCOME					"Hola, soy tu impresora Original Prusa i3. Quieres que te guie a traves de la configuracion?"
+#define MSG_WIZARD_WELCOME					"Hola, soy tu impresora Unoriginal Prusa i3. Quieres que te guie a traves de la configuracion?"
 #define MSG_WIZARD_QUIT						"Siempre puedes acceder al asistente desde Calibracion -> Wizard"
 #define MSG_WIZARD_SELFTEST					"Primero, hare el Selftest para comprobar los problemas de montaje mas comunes."
 #define MSG_WIZARD_CALIBRATION_FAILED		"Lee el manual y resuelve el problema. Despues, reinicia la impresora y continua con el Wizard"
