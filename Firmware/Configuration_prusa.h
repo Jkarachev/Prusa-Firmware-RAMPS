@@ -7,7 +7,13 @@ GENERAL SETTINGS
 
 // Printer revision
 #define FILAMENT_SIZE "1_75mm_MK2"
+
+//#define VOLCANO
+#ifdef VOLCANO
+#define NOZZLE_TYPE "E3DVolcano"
+#else
 #define NOZZLE_TYPE "E3Dv6full"
+#endif
 
 // Developer flag
 #define DEVELOPER
@@ -55,7 +61,13 @@ const bool Z_MIN_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 #define X_MIN_POS 0
 #define Y_MAX_POS 210
 #define Y_MIN_POS -2.2
+
+#ifdef VOLCANO
+#define Z_MAX_POS 202
+#else
 #define Z_MAX_POS 210
+#endif
+
 #define Z_MIN_POS 0.15
 
 // Canceled home position
