@@ -183,68 +183,68 @@ void Config_StoreSettings()
 
   // Save TMC2130 Configuration, and placeholder values
   uint16_t val;
-  #if ENABLED(HAVE_TMC2130)
-    #if ENABLED(X_IS_TMC2130)
+  #if defined(HAVE_TMC2130)
+    #if defined(X_IS_TMC2130)
       val = stepperX.getCurrent();
     #else
       val = 0;
     #endif
     EEPROM_WRITE_VAR(i, val);
-    #if ENABLED(Y_IS_TMC2130)
+    #if defined(Y_IS_TMC2130)
       val = stepperY.getCurrent();
     #else
       val = 0;
     #endif
     EEPROM_WRITE_VAR(i, val);
-    #if ENABLED(Z_IS_TMC2130)
+    #if defined(Z_IS_TMC2130)
       val = stepperZ.getCurrent();
     #else
       val = 0;
     #endif
     EEPROM_WRITE_VAR(i, val);
-    #if ENABLED(X2_IS_TMC2130)
+    #if defined(X2_IS_TMC2130)
       val = stepperX2.getCurrent();
     #else
       val = 0;
     #endif
     EEPROM_WRITE_VAR(i, val);
-    #if ENABLED(Y2_IS_TMC2130)
+    #if defined(Y2_IS_TMC2130)
       val = stepperY2.getCurrent();
     #else
       val = 0;
     #endif
     EEPROM_WRITE_VAR(i, val);
-    #if ENABLED(Z2_IS_TMC2130)
+    #if defined(Z2_IS_TMC2130)
       val = stepperZ2.getCurrent();
     #else
       val = 0;
     #endif
     EEPROM_WRITE_VAR(i, val);
-    #if ENABLED(E0_IS_TMC2130)
+    #if defined(E0_IS_TMC2130)
       val = stepperE0.getCurrent();
     #else
       val = 0;
     #endif
     EEPROM_WRITE_VAR(i, val);
-    #if ENABLED(E1_IS_TMC2130)
+    #if defined(E1_IS_TMC2130)
       val = stepperE1.getCurrent();
     #else
       val = 0;
     #endif
     EEPROM_WRITE_VAR(i, val);
-    #if ENABLED(E2_IS_TMC2130)
+    #if defined(E2_IS_TMC2130)
       val = stepperE2.getCurrent();
     #else
       val = 0;
     #endif
     EEPROM_WRITE_VAR(i, val);
-    #if ENABLED(E3_IS_TMC2130)
+    #if defined(E3_IS_TMC2130)
       val = stepperE3.getCurrent();
     #else
       val = 0;
     #endif
     EEPROM_WRITE_VAR(i, val);
-    #if ENABLED(E4_IS_TMC2130)
+    #if defined(E4_IS_TMC2130)
       val = stepperE4.getCurrent();
     #else
       val = 0;
@@ -482,49 +482,49 @@ bool Config_RetrieveSettings()
 #endif
 
     uint16_t val;
-    #if ENABLED(HAVE_TMC2130)
+    #if defined(HAVE_TMC2130)
       EEPROM_READ_VAR(i, val);
-      #if ENABLED(X_IS_TMC2130)
+      #if defined(X_IS_TMC2130)
         stepperX.setCurrent(val, R_SENSE, HOLD_MULTIPLIER);
       #endif
       EEPROM_READ_VAR(i, val);
-      #if ENABLED(Y_IS_TMC2130)
+      #if defined(Y_IS_TMC2130)
         stepperY.setCurrent(val, R_SENSE, HOLD_MULTIPLIER);
       #endif
       EEPROM_READ_VAR(i, val);
-      #if ENABLED(Z_IS_TMC2130)
+      #if defined(Z_IS_TMC2130)
         stepperZ.setCurrent(val, R_SENSE, HOLD_MULTIPLIER);
       #endif
       EEPROM_READ_VAR(i, val);
-      #if ENABLED(X2_IS_TMC2130)
+      #if defined(X2_IS_TMC2130)
         stepperX2.setCurrent(val, R_SENSE, HOLD_MULTIPLIER);
       #endif
       EEPROM_READ_VAR(i, val);
-      #if ENABLED(Y2_IS_TMC2130)
+      #if defined(Y2_IS_TMC2130)
         stepperY2.setCurrent(val, R_SENSE, HOLD_MULTIPLIER);
       #endif
       EEPROM_READ_VAR(i, val);
-      #if ENABLED(Z2_IS_TMC2130)
+      #if defined(Z2_IS_TMC2130)
         stepperZ2.setCurrent(val, R_SENSE, HOLD_MULTIPLIER);
       #endif
       EEPROM_READ_VAR(i, val);
-      #if ENABLED(E0_IS_TMC2130)
+      #if defined(E0_IS_TMC2130)
         stepperE0.setCurrent(val, R_SENSE, HOLD_MULTIPLIER);
       #endif
       EEPROM_READ_VAR(i, val);
-      #if ENABLED(E1_IS_TMC2130)
+      #if defined(E1_IS_TMC2130)
         stepperE1.setCurrent(val, R_SENSE, HOLD_MULTIPLIER);
       #endif
       EEPROM_READ_VAR(i, val);
-      #if ENABLED(E2_IS_TMC2130)
+      #if defined(E2_IS_TMC2130)
         stepperE2.setCurrent(val, R_SENSE, HOLD_MULTIPLIER);
       #endif
       EEPROM_READ_VAR(i, val);
-      #if ENABLED(E3_IS_TMC2130)
+      #if defined(E3_IS_TMC2130)
         stepperE3.setCurrent(val, R_SENSE, HOLD_MULTIPLIER);
       #endif
       EEPROM_READ_VAR(i, val);
-      #if ENABLED(E4_IS_TMC2130)
+      #if defined(E4_IS_TMC2130)
         stepperE4.setCurrent(val, R_SENSE, HOLD_MULTIPLIER);
       #endif
     #else
@@ -626,35 +626,35 @@ void Config_ResetDefault()
 #endif
 #endif
 
-#if ENABLED(HAVE_TMC2130)
-    #if ENABLED(X_IS_TMC2130)
+#if defined(HAVE_TMC2130)
+    #if defined(X_IS_TMC2130)
       stepperX.setCurrent(X_CURRENT, R_SENSE, HOLD_MULTIPLIER);
     #endif
-    #if ENABLED(Y_IS_TMC2130)
+    #if defined(Y_IS_TMC2130)
       stepperY.setCurrent(Y_CURRENT, R_SENSE, HOLD_MULTIPLIER);
     #endif
-    #if ENABLED(Z_IS_TMC2130)
+    #if defined(Z_IS_TMC2130)
       stepperZ.setCurrent(Z_CURRENT, R_SENSE, HOLD_MULTIPLIER);
     #endif
-    #if ENABLED(X2_IS_TMC2130)
+    #if defined(X2_IS_TMC2130)
       stepperX2.setCurrent(X2_CURRENT, R_SENSE, HOLD_MULTIPLIER);
     #endif
-    #if ENABLED(Y2_IS_TMC2130)
+    #if defined(Y2_IS_TMC2130)
       stepperY2.setCurrent(Y2_CURRENT, R_SENSE, HOLD_MULTIPLIER);
     #endif
-    #if ENABLED(Z2_IS_TMC2130)
+    #if defined(Z2_IS_TMC2130)
       stepperZ2.setCurrent(Z2_CURRENT, R_SENSE, HOLD_MULTIPLIER);
     #endif
-    #if ENABLED(E0_IS_TMC2130)
+    #if defined(E0_IS_TMC2130)
       stepperE0.setCurrent(E0_CURRENT, R_SENSE, HOLD_MULTIPLIER);
     #endif
-    #if ENABLED(E1_IS_TMC2130)
+    #if defined(E1_IS_TMC2130)
       stepperE1.setCurrent(E1_CURRENT, R_SENSE, HOLD_MULTIPLIER);
     #endif
-    #if ENABLED(E2_IS_TMC2130)
+    #if defined(E2_IS_TMC2130)
       stepperE2.setCurrent(E2_CURRENT, R_SENSE, HOLD_MULTIPLIER);
     #endif
-    #if ENABLED(E3_IS_TMC2130)
+    #if defined(E3_IS_TMC2130)
       stepperE3.setCurrent(E3_CURRENT, R_SENSE, HOLD_MULTIPLIER);
     #endif
   #endif

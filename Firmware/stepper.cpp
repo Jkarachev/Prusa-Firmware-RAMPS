@@ -800,7 +800,7 @@ void st_init()
   microstep_init(); //Initialize Microstepping Pins
 
   // Init TMC2130 Steppers
-  #if ENABLED(HAVE_TMC2130)
+  #ifdef HAVE_TMC2130
     tmc2130_init();
   #endif
 

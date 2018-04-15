@@ -55,7 +55,7 @@
   #include <Wire.h>
 #endif
 
-#if ENABLED(HAVE_TMC2130)
+#if defined(HAVE_TMC2130)
   #include <SPI.h>
   #include <TMC2130Stepper.h>
 #endif
