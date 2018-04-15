@@ -9,6 +9,10 @@
 #include "mesh_bed_leveling.h"
 #endif
 
+#if ENABLED(HAVE_TMC2130)
+    #include "stepper_indirection.h"
+#endif
+
 void _EEPROM_writeData(int &pos, uint8_t* value, uint8_t size)
 {
     do
@@ -21,6 +25,8 @@ void _EEPROM_writeData(int &pos, uint8_t* value, uint8_t size)
 #define EEPROM_WRITE_VAR(pos, value) _EEPROM_writeData(pos, (uint8_t*)&value, sizeof(value))
 void _EEPROM_readData(int &pos, uint8_t* value, uint8_t size)
 {
+    // SERIAL_ECHOPAIR("Reading from ",(int*)pos);
+    // SERIAL_ECHOLN("");
     do
     {
         *value = eeprom_read_byte((unsigned char*)pos);
@@ -65,17 +71,17 @@ void _EEPROM_readData(int &pos, uint8_t* value, uint8_t size)
  *  172 filament_size
  * 
  * HAVE_TMC2130:
- *  ??? Stepper X current
- *  ??? Stepper Y current
- *  ??? Stepper Z current
- *  ???
- *  ???
- *  ???
- *  ??? Stepper E0 current
- *  ??? Stepper E1 current
- *  ???
- *  ???
- *  ???
+ *  176 Stepper X current
+ *  178 Stepper Y current
+ *  180 Stepper Z current
+ *  182 Stepper X2 current
+ *  184 Stepper Y2 current
+ *  186 Stepper Z2 current
+ *  188 Stepper E0 current
+ *  190 Stepper E1 current
+ *  192 Stepper E2 current
+ *  194 Stepper E3 current
+ *  196 Stepper E4 current
  */
 
 
@@ -175,6 +181,81 @@ void Config_StoreSettings()
   EEPROM_WRITE_VAR(i, filament_size[2]);
   #endif
   #endif
+
+  // Save TMC2130 Configuration, and placeholder values
+  uint16_t val;
+  #if ENABLED(HAVE_TMC2130)
+    #if ENABLED(X_IS_TMC2130)
+      val = stepperX.getCurrent();
+    #else
+      val = 0;
+    #endif
+    EEPROM_WRITE_VAR(i, val);
+    #if ENABLED(Y_IS_TMC2130)
+      val = stepperY.getCurrent();
+    #else
+      val = 0;
+    #endif
+    EEPROM_WRITE_VAR(i, val);
+    #if ENABLED(Z_IS_TMC2130)
+      val = stepperZ.getCurrent();
+    #else
+      val = 0;
+    #endif
+    EEPROM_WRITE_VAR(i, val);
+    #if ENABLED(X2_IS_TMC2130)
+      val = stepperX2.getCurrent();
+    #else
+      val = 0;
+    #endif
+    EEPROM_WRITE_VAR(i, val);
+    #if ENABLED(Y2_IS_TMC2130)
+      val = stepperY2.getCurrent();
+    #else
+      val = 0;
+    #endif
+    EEPROM_WRITE_VAR(i, val);
+    #if ENABLED(Z2_IS_TMC2130)
+      val = stepperZ2.getCurrent();
+    #else
+      val = 0;
+    #endif
+    EEPROM_WRITE_VAR(i, val);
+    #if ENABLED(E0_IS_TMC2130)
+      val = stepperE0.getCurrent();
+    #else
+      val = 0;
+    #endif
+    EEPROM_WRITE_VAR(i, val);
+    #if ENABLED(E1_IS_TMC2130)
+      val = stepperE1.getCurrent();
+    #else
+      val = 0;
+    #endif
+    EEPROM_WRITE_VAR(i, val);
+    #if ENABLED(E2_IS_TMC2130)
+      val = stepperE2.getCurrent();
+    #else
+      val = 0;
+    #endif
+    EEPROM_WRITE_VAR(i, val);
+    #if ENABLED(E3_IS_TMC2130)
+      val = stepperE3.getCurrent();
+    #else
+      val = 0;
+    #endif
+    EEPROM_WRITE_VAR(i, val);
+    #if ENABLED(E4_IS_TMC2130)
+      val = stepperE4.getCurrent();
+    #else
+      val = 0;
+    #endif
+    EEPROM_WRITE_VAR(i, val);
+  #else
+    val = 0;
+    for (uint8_t q = 11; q--;) EEPROM_WRITE_VAR(i, val);
+  #endif
+
   /*MYSERIAL.print("Top address used:\n");
   MYSERIAL.print(i);
   MYSERIAL.print("\n");
@@ -400,6 +481,57 @@ bool Config_RetrieveSettings()
 		EEPROM_READ_VAR(i, filament_size[2]);
 #endif
 #endif
+
+    uint16_t val;
+    #if ENABLED(HAVE_TMC2130)
+      EEPROM_READ_VAR(i, val);
+      #if ENABLED(X_IS_TMC2130)
+        stepperX.setCurrent(val, R_SENSE, HOLD_MULTIPLIER);
+      #endif
+      EEPROM_READ_VAR(i, val);
+      #if ENABLED(Y_IS_TMC2130)
+        stepperY.setCurrent(val, R_SENSE, HOLD_MULTIPLIER);
+      #endif
+      EEPROM_READ_VAR(i, val);
+      #if ENABLED(Z_IS_TMC2130)
+        stepperZ.setCurrent(val, R_SENSE, HOLD_MULTIPLIER);
+      #endif
+      EEPROM_READ_VAR(i, val);
+      #if ENABLED(X2_IS_TMC2130)
+        stepperX2.setCurrent(val, R_SENSE, HOLD_MULTIPLIER);
+      #endif
+      EEPROM_READ_VAR(i, val);
+      #if ENABLED(Y2_IS_TMC2130)
+        stepperY2.setCurrent(val, R_SENSE, HOLD_MULTIPLIER);
+      #endif
+      EEPROM_READ_VAR(i, val);
+      #if ENABLED(Z2_IS_TMC2130)
+        stepperZ2.setCurrent(val, R_SENSE, HOLD_MULTIPLIER);
+      #endif
+      EEPROM_READ_VAR(i, val);
+      #if ENABLED(E0_IS_TMC2130)
+        stepperE0.setCurrent(val, R_SENSE, HOLD_MULTIPLIER);
+      #endif
+      EEPROM_READ_VAR(i, val);
+      #if ENABLED(E1_IS_TMC2130)
+        stepperE1.setCurrent(val, R_SENSE, HOLD_MULTIPLIER);
+      #endif
+      EEPROM_READ_VAR(i, val);
+      #if ENABLED(E2_IS_TMC2130)
+        stepperE2.setCurrent(val, R_SENSE, HOLD_MULTIPLIER);
+      #endif
+      EEPROM_READ_VAR(i, val);
+      #if ENABLED(E3_IS_TMC2130)
+        stepperE3.setCurrent(val, R_SENSE, HOLD_MULTIPLIER);
+      #endif
+      EEPROM_READ_VAR(i, val);
+      #if ENABLED(E4_IS_TMC2130)
+        stepperE4.setCurrent(val, R_SENSE, HOLD_MULTIPLIER);
+      #endif
+    #else
+      for (uint8_t q = 0; q < 11; q++) EEPROM_READ_VAR(i, val);
+    #endif
+
 		calculate_volumetric_multipliers();
 		// Call updatePID (similar to when we have processed M301)
 		updatePID();
@@ -494,6 +626,40 @@ void Config_ResetDefault()
 	filament_size[2] = DEFAULT_NOMINAL_FILAMENT_DIA;
 #endif
 #endif
+
+#if ENABLED(HAVE_TMC2130)
+    #if ENABLED(X_IS_TMC2130)
+      stepperX.setCurrent(X_CURRENT, R_SENSE, HOLD_MULTIPLIER);
+    #endif
+    #if ENABLED(Y_IS_TMC2130)
+      stepperY.setCurrent(Y_CURRENT, R_SENSE, HOLD_MULTIPLIER);
+    #endif
+    #if ENABLED(Z_IS_TMC2130)
+      stepperZ.setCurrent(Z_CURRENT, R_SENSE, HOLD_MULTIPLIER);
+    #endif
+    #if ENABLED(X2_IS_TMC2130)
+      stepperX2.setCurrent(X2_CURRENT, R_SENSE, HOLD_MULTIPLIER);
+    #endif
+    #if ENABLED(Y2_IS_TMC2130)
+      stepperY2.setCurrent(Y2_CURRENT, R_SENSE, HOLD_MULTIPLIER);
+    #endif
+    #if ENABLED(Z2_IS_TMC2130)
+      stepperZ2.setCurrent(Z2_CURRENT, R_SENSE, HOLD_MULTIPLIER);
+    #endif
+    #if ENABLED(E0_IS_TMC2130)
+      stepperE0.setCurrent(E0_CURRENT, R_SENSE, HOLD_MULTIPLIER);
+    #endif
+    #if ENABLED(E1_IS_TMC2130)
+      stepperE1.setCurrent(E1_CURRENT, R_SENSE, HOLD_MULTIPLIER);
+    #endif
+    #if ENABLED(E2_IS_TMC2130)
+      stepperE2.setCurrent(E2_CURRENT, R_SENSE, HOLD_MULTIPLIER);
+    #endif
+    #if ENABLED(E3_IS_TMC2130)
+      stepperE3.setCurrent(E3_CURRENT, R_SENSE, HOLD_MULTIPLIER);
+    #endif
+  #endif
+
 	calculate_volumetric_multipliers();
 
 SERIAL_ECHO_START;
