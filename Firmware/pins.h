@@ -2,6 +2,7 @@
 #define PINS_H
 
 #include "boards.h"
+#include "Configuration_prusa.h"
 
 #define LARGE_FLASH true
 
