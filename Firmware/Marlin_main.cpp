@@ -499,6 +499,12 @@ boolean chdkActive = false;
 
 static int saved_feedmultiply_mm = 100;
 
+// check tmc over-temperature timer
+
+#ifdef HAVE_TMC2130
+  static unsigned long next_cOT = 0;
+#endif
+
 //===========================================================================
 //=============================Routines======================================
 //===========================================================================
@@ -6109,43 +6115,6 @@ void ClearToSend()
         SERIAL_PROTOCOLLNRPGM(MSG_OK);
 }
 
-void update_currents() {
-	float current_high[3] = DEFAULT_PWM_MOTOR_CURRENT_LOUD;
-	float current_low[3] = DEFAULT_PWM_MOTOR_CURRENT;
-	float tmp_motor[3];
-
-	//SERIAL_ECHOLNPGM("Currents updated: ");
-
-	if (destination[Z_AXIS] < Z_SILENT) {
-		//SERIAL_ECHOLNPGM("LOW");
-		for (uint8_t i = 0; i < 3; i++) {
-			digipot_current(i, current_low[i]);
-			/*MYSERIAL.print(int(i));
-			SERIAL_ECHOPGM(": ");
-			MYSERIAL.println(current_low[i]);*/
-		}
-	}
-	else if (destination[Z_AXIS] > Z_HIGH_POWER) {
-		//SERIAL_ECHOLNPGM("HIGH");
-		for (uint8_t i = 0; i < 3; i++) {
-			digipot_current(i, current_high[i]);
-			/*MYSERIAL.print(int(i));
-			SERIAL_ECHOPGM(": ");
-			MYSERIAL.println(current_high[i]);*/
-		}
-	}
-	else {
-		for (uint8_t i = 0; i < 3; i++) {
-			float q = current_low[i] - Z_SILENT*((current_high[i] - current_low[i]) / (Z_HIGH_POWER - Z_SILENT));
-			tmp_motor[i] = ((current_high[i] - current_low[i]) / (Z_HIGH_POWER - Z_SILENT))*destination[Z_AXIS] + q;
-			digipot_current(i, tmp_motor[i]);
-			/*MYSERIAL.print(int(i));
-			SERIAL_ECHOPGM(": ");
-			MYSERIAL.println(tmp_motor[i]);*/
-		}
-	}
-}
-
 void get_coordinates()
 {
   // XXX: Unused var (set but not ref)
@@ -6155,7 +6124,6 @@ void get_coordinates()
     {
 	  destination[i] = (float)code_value() + (axis_relative_modes[i] || relative_mode)*current_position[i];
 	  // seen[i]=true;
-	  if (i == Z_AXIS && SilentModeMenu == 2) update_currents();
     }
     else destination[i] = current_position[i]; //Are these else lines really needed?
   }
@@ -6363,102 +6331,102 @@ void handle_status_leds(void) {
 }
 #endif
 
-// #if defined(HAVE_TMC2130)
+#if defined(HAVE_TMC2130)
 
-//   void automatic_current_control(TMC2130Stepper &st, String axisID) {
-//     // Check otpw even if we don't use automatic control. Allows for flag inspection.
-//     const bool is_otpw = st.checkOT();
+  void automatic_current_control(TMC2130Stepper &st) {
+    // Check otpw even if we don't use automatic control. Allows for flag inspection.
+    const bool is_otpw = st.checkOT();
 
-//     // Report if a warning was triggered
-//     static bool previous_otpw = false;
-//     if (is_otpw && !previous_otpw) {
-//       // char timestamp[10];
-//       // duration_t elapsed = print_job_timer.duration();
-//       // const bool has_days = (elapsed.value > 60*60*24L);
-//       // (void)elapsed.toDigital(timestamp, has_days);
-//       // SERIAL_ECHO(timestamp);
-//       // SERIAL_ECHOPGM(": ");
-//       SERIAL_ECHO(axisID);
-//       SERIAL_ECHOLNPGM(" driver overtemperature warning!");
-//     }
-//     previous_otpw = is_otpw;
+    // Report if a warning was triggered
+    static bool previous_otpw = false;
+    if (is_otpw && !previous_otpw) {
+      // char timestamp[10];
+      // duration_t elapsed = print_job_timer.duration();
+      // const bool has_days = (elapsed.value > 60*60*24L);
+      // (void)elapsed.toDigital(timestamp, has_days);
+      // SERIAL_ECHO(timestamp);
+      // SERIAL_ECHOPGM(": ");
+      // SERIAL_ECHO(axisID);
+      SERIAL_ECHOLNPGM("Driver overtemperature warning!");
+    }
+    previous_otpw = is_otpw;
 
-//     #if CURRENT_STEP > 0 && defined(AUTOMATIC_CURRENT_CONTROL)
-//       // Return if user has not enabled current control start with M906 S1.
-//       if (!auto_current_control) return;
+    #if CURRENT_STEP > 0 && defined(AUTOMATIC_CURRENT_CONTROL)
+      // Return if user has not enabled current control start with M906 S1.
+      if (!auto_current_control) return;
 
-//       /**
-//        * Decrease current if is_otpw is true.
-//        * Bail out if driver is disabled.
-//        * Increase current if OTPW has not been triggered yet.
-//        */
-//       uint16_t current = st.getCurrent();
-//       if (is_otpw) {
-//         st.setCurrent(current - CURRENT_STEP, R_SENSE, HOLD_MULTIPLIER);
-//         #if defined(REPORT_CURRENT_CHANGE)
-//           SERIAL_ECHO(axisID);
-//           SERIAL_ECHOPAIR(" current decreased to ", st.getCurrent());
-//         #endif
-//       }
+      /**
+       * Decrease current if is_otpw is true.
+       * Bail out if driver is disabled.
+       * Increase current if OTPW has not been triggered yet.
+       */
+      uint16_t current = st.getCurrent();
+      if (is_otpw) {
+        st.setCurrent(current - CURRENT_STEP, R_SENSE, HOLD_MULTIPLIER);
+        #if defined(REPORT_CURRENT_CHANGE)
+          SERIAL_ECHO(axisID);
+          SERIAL_ECHOPAIR(" current decreased to ", st.getCurrent());
+        #endif
+      }
 
-//       else if (!st.isEnabled())
-//         return;
+      else if (!st.isEnabled())
+        return;
 
-//       else if (!is_otpw && !st.getOTPW()) {
-//         current += CURRENT_STEP;
-//         if (current <= AUTO_ADJUST_MAX) {
-//           st.setCurrent(current, R_SENSE, HOLD_MULTIPLIER);
-//           #if defined(REPORT_CURRENT_CHANGE)
-//             SERIAL_ECHO(axisID);
-//             SERIAL_ECHOPAIR(" current increased to ", st.getCurrent());
-//           #endif
-//         }
-//       }
-//       SERIAL_EOL();
-//     #endif
-//   }
+      else if (!is_otpw && !st.getOTPW()) {
+        current += CURRENT_STEP;
+        if (current <= AUTO_ADJUST_MAX) {
+          st.setCurrent(current, R_SENSE, HOLD_MULTIPLIER);
+          #if defined(REPORT_CURRENT_CHANGE)
+            SERIAL_ECHO(axisID);
+            SERIAL_ECHOPAIR(" current increased to ", st.getCurrent());
+          #endif
+        }
+      }
+      SERIAL_EOL();
+    #endif
+  }
 
-//   void checkOverTemp() {
-//     static unsigned long next_cOT = 0;
-//     if (ELAPSED(millis(), next_cOT)) {
-//       next_cOT = millis() + 5000;
-//       #if defined(X_IS_TMC2130)
-//         automatic_current_control(stepperX, "X");
-//       #endif
-//       #if defined(Y_IS_TMC2130)
-//         automatic_current_control(stepperY, "Y");
-//       #endif
-//       #if defined(Z_IS_TMC2130)
-//         automatic_current_control(stepperZ, "Z");
-//       #endif
-//       #if defined(X2_IS_TMC2130)
-//         automatic_current_control(stepperX2, "X2");
-//       #endif
-//       #if defined(Y2_IS_TMC2130)
-//         automatic_current_control(stepperY2, "Y2");
-//       #endif
-//       #if defined(Z2_IS_TMC2130)
-//         automatic_current_control(stepperZ2, "Z2");
-//       #endif
-//       #if defined(E0_IS_TMC2130)
-//         automatic_current_control(stepperE0, "E0");
-//       #endif
-//       #if defined(E1_IS_TMC2130)
-//         automatic_current_control(stepperE1, "E1");
-//       #endif
-//       #if defined(E2_IS_TMC2130)
-//         automatic_current_control(stepperE2, "E2");
-//       #endif
-//       #if defined(E3_IS_TMC2130)
-//         automatic_current_control(stepperE3, "E3");
-//       #endif
-//       #if defined(E4_IS_TMC2130)
-//         automatic_current_control(stepperE4, "E4");
-//       #endif
-//     }
-//   }
+  void checkOverTemp() {
 
-// #endif // HAVE_TMC2130
+    if (ELAPSED(millis(), next_cOT)) {
+      next_cOT = millis() + 5000;
+      #if defined(X_IS_TMC2130)
+        automatic_current_control(stepperX);
+      #endif
+      #if defined(Y_IS_TMC2130)
+        automatic_current_control(stepperY, "Y");
+      #endif
+      #if defined(Z_IS_TMC2130)
+        automatic_current_control(stepperZ, "Z");
+      #endif
+      #if defined(X2_IS_TMC2130)
+        automatic_current_control(stepperX2, "X2");
+      #endif
+      #if defined(Y2_IS_TMC2130)
+        automatic_current_control(stepperY2, "Y2");
+      #endif
+      #if defined(Z2_IS_TMC2130)
+        automatic_current_control(stepperZ2, "Z2");
+      #endif
+      #if defined(E0_IS_TMC2130)
+        automatic_current_control(stepperE0, "E0");
+      #endif
+      #if defined(E1_IS_TMC2130)
+        automatic_current_control(stepperE1, "E1");
+      #endif
+      #if defined(E2_IS_TMC2130)
+        automatic_current_control(stepperE2, "E2");
+      #endif
+      #if defined(E3_IS_TMC2130)
+        automatic_current_control(stepperE3, "E3");
+      #endif
+      #if defined(E4_IS_TMC2130)
+        automatic_current_control(stepperE4, "E4");
+      #endif
+    }
+  }
+
+#endif // HAVE_TMC2130
 
 void manage_inactivity(bool ignore_stepper_queue/*=false*/) //default argument set in Marlin.h
 {
@@ -6546,9 +6514,9 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) //default argument s
       handle_status_leds();
   #endif
 
-  // #if defined(HAVE_TMC2130)
-  //   checkOverTemp();
-  // #endif
+  #if defined(HAVE_TMC2130)
+    checkOverTemp();
+  #endif
   
   check_axes_activity();
 }

@@ -94,7 +94,7 @@ int8_t ReInitLCD = 0;
 
 int8_t SDscrool = 0;
 
-int8_t SilentModeMenu = 0;
+
 
 #ifdef SNMM
 uint8_t snmm_extruder = 0;
@@ -2950,29 +2950,7 @@ static void lcd_sort_type_set() {
 }
 #endif //SDCARD_SORT_ALPHA
 
-static void lcd_silent_mode_set() {
-	switch (SilentModeMenu) {
-	case 0: SilentModeMenu = 1; break;
-	case 1: SilentModeMenu = 2; break;
-	case 2: SilentModeMenu = 0; break;
-	default: SilentModeMenu = 0; break;
-	}
-  eeprom_update_byte((unsigned char *)EEPROM_SILENT, SilentModeMenu);
-  digipot_init();
-  lcd_goto_menu(lcd_settings_menu, 7);
-}
 
-static void lcd_silent_mode_set_tune() {
-  switch (SilentModeMenu) {
-  case 0: SilentModeMenu = 1; break;
-  case 1: SilentModeMenu = 2; break;
-  case 2: SilentModeMenu = 0; break;
-  default: SilentModeMenu = 0; break;
-  }
-  eeprom_update_byte((unsigned char *)EEPROM_SILENT, SilentModeMenu);
-  digipot_init();
-  lcd_goto_menu(lcd_tune_menu, 8);
-}
 
 static void lcd_set_lang(unsigned char lang) {
   lang_selected = lang;
@@ -3362,7 +3340,7 @@ void lcd_wizard(int state) {
 
 static void lcd_settings_menu()
 {
-  EEPROM_read(EEPROM_SILENT, (uint8_t*)&SilentModeMenu, sizeof(SilentModeMenu));
+
   START_MENU();
 
   MENU_ITEM(back, MSG_MAIN, lcd_main_menu);
@@ -3378,12 +3356,7 @@ static void lcd_settings_menu()
   }
     
   
-	switch (SilentModeMenu) {
-	case 0: MENU_ITEM(function, MSG_SILENT_MODE_OFF, lcd_silent_mode_set); break;
-	case 1: MENU_ITEM(function, MSG_SILENT_MODE_ON, lcd_silent_mode_set); break;
-	case 2: MENU_ITEM(function, MSG_AUTO_MODE_ON, lcd_silent_mode_set); break;
-	default: MENU_ITEM(function, MSG_SILENT_MODE_OFF, lcd_silent_mode_set); break;
-	}	  
+
 
   
 	if (!isPrintPaused && !homing_flag)
@@ -4592,9 +4565,7 @@ static void lcd_colorprint_change() {
 
 static void lcd_tune_menu()
 {
-  EEPROM_read(EEPROM_SILENT, (uint8_t*)&SilentModeMenu, sizeof(SilentModeMenu));
 
-  
 
   START_MENU();
   MENU_ITEM(back, MSG_MAIN, lcd_main_menu); //1
@@ -4609,12 +4580,7 @@ static void lcd_tune_menu()
   MENU_ITEM(function, MSG_FILAMENTCHANGE, lcd_colorprint_change);//7
 #endif
 
-	  switch (SilentModeMenu) {
-	  case 0: MENU_ITEM(function, MSG_SILENT_MODE_OFF, lcd_silent_mode_set_tune); break;
-	  case 1: MENU_ITEM(function, MSG_SILENT_MODE_ON, lcd_silent_mode_set_tune); break;
-	  case 2: MENU_ITEM(function, MSG_AUTO_MODE_ON, lcd_silent_mode_set_tune); break;
-	  default: MENU_ITEM(function, MSG_SILENT_MODE_OFF, lcd_silent_mode_set_tune); break;
-	  }
+	  
 
   END_MENU();
 }
@@ -5127,8 +5093,6 @@ static bool lcd_selfcheck_axis(int _axis, int _travel)
 
 static bool lcd_selfcheck_pulleys(int axis)
 {
-	float tmp_motor_loud[3] = DEFAULT_PWM_MOTOR_CURRENT_LOUD;
-	float tmp_motor[3] = DEFAULT_PWM_MOTOR_CURRENT;
 	float current_position_init;
 	float move;
 	bool endstop_triggered = false;
@@ -5150,8 +5114,7 @@ static bool lcd_selfcheck_pulleys(int axis)
 			digipot_current(0, 850); //set motor current higher
 			plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[3], 200, active_extruder);
 			st_synchronize();
-			if (SilentModeMenu == 1) digipot_current(0, tmp_motor[0]); //set back to normal operation currents
-			else digipot_current(0, tmp_motor_loud[0]); //set motor current back			
+					
 			current_position[axis] = current_position[axis] - move;
 			plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[3], 50, active_extruder);
 			st_synchronize();

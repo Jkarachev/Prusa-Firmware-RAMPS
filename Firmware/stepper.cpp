@@ -90,7 +90,7 @@ static bool old_z_max_endstop=false;
 static bool check_endstops = true;
 static bool check_z_endstop = false;
 
-int8_t SilentMode;
+// int8_t SilentMode;
 
 volatile long count_position[NUM_AXIS] = { 0, 0, 0, 0};
 volatile signed char count_direction[NUM_AXIS] = { 1, 1, 1, 1};
@@ -1167,8 +1167,8 @@ void EEPROM_read_st(int pos, uint8_t* value, uint8_t size)
 
 void digipot_init() //Initialize Digipot Motor Current
 {  
-  EEPROM_read_st(EEPROM_SILENT,(uint8_t*)&SilentMode,sizeof(SilentMode));
-  SilentModeMenu = SilentMode;
+  // EEPROM_read_st(EEPROM_SILENT,(uint8_t*)&SilentMode,sizeof(SilentMode));
+  // SilentModeMenu = SilentMode;
   #if defined(DIGIPOTSS_PIN) && DIGIPOTSS_PIN > -1
     if(SilentMode == 0){
     const uint8_t digipot_motor_current[] = DIGIPOT_MOTOR_CURRENT_LOUD;

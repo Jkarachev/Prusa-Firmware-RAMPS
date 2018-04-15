@@ -90,7 +90,6 @@
   extern unsigned long lcd_timeoutToStatus;
   extern int lcd_commands_type;
   
-  extern int8_t SilentModeMenu;
 
 #ifdef SNMM
   extern uint8_t snmm_extruder;
