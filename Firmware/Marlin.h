@@ -62,6 +62,9 @@
   #define MYSERIAL MSerial
 #endif
 
+#define SERIAL_CHAR(x) (MYSERIAL.write(x))
+#define SERIAL_EOL() SERIAL_CHAR('\n')
+
 #define SERIAL_PROTOCOL(x) (MYSERIAL.print(x))
 #define SERIAL_PROTOCOL_F(x,y) (MYSERIAL.print(x,y))
 #define SERIAL_PROTOCOLPGM(x) (serialprintPGM(PSTR(x)))

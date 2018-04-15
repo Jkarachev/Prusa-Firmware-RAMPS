@@ -4,13 +4,14 @@
 #include "ultralcd.h"
 #include "ConfigurationStore.h"
 #include "Configuration_prusa.h"
+#include "Configuration_adv.h"
 
 #ifdef MESH_BED_LEVELING
 #include "mesh_bed_leveling.h"
 #endif
 
-#if ENABLED(HAVE_TMC2130)
-    #include "stepper_indirection.h"
+#ifdef HAVE_TMC2130
+  #include "stepper_indirection.h"
 #endif
 
 void _EEPROM_writeData(int &pos, uint8_t* value, uint8_t size)
@@ -25,8 +26,6 @@ void _EEPROM_writeData(int &pos, uint8_t* value, uint8_t size)
 #define EEPROM_WRITE_VAR(pos, value) _EEPROM_writeData(pos, (uint8_t*)&value, sizeof(value))
 void _EEPROM_readData(int &pos, uint8_t* value, uint8_t size)
 {
-    // SERIAL_ECHOPAIR("Reading from ",(int*)pos);
-    // SERIAL_ECHOLN("");
     do
     {
         *value = eeprom_read_byte((unsigned char*)pos);

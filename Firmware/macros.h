@@ -23,6 +23,14 @@
 #ifndef MACROS_H
 #define MACROS_H
 
+#define NUM_AXIS 4
+#define XYZE 4
+#define ABC  3
+#define XYZ  3
+
+#define PENDING(NOW,SOON) ((long)(NOW-(SOON))<0)
+#define ELAPSED(NOW,SOON) (!PENDING(NOW,SOON))
+
 // Macros to support option testing
 #define _CAT(a, ...) a ## __VA_ARGS__
 #define SWITCH_ENABLED_false 0

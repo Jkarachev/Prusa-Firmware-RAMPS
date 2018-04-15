@@ -453,7 +453,7 @@ const unsigned int dropsegments=5; //everything with less than this number of st
  * the hardware SPI interface on your board and define the required CS pins
  * in your `pins_MYBOARD.h` file. (e.g., RAMPS 1.4 uses AUX3 pins `X_CS_PIN 53`, `Y_CS_PIN 49`, etc.).
  */
-//#define HAVE_TMC2130
+#define HAVE_TMC2130
 
 /**
  * Enable this for SilentStepStick Trinamic TMC2208 UART-configurable stepper drivers.
@@ -472,11 +472,11 @@ const unsigned int dropsegments=5; //everything with less than this number of st
   // CHOOSE YOUR MOTORS HERE, THIS IS MANDATORY
   #define X_IS_TMC2130
   //#define X2_IS_TMC2130
-  //#define Y_IS_TMC2130
+  #define Y_IS_TMC2130
   //#define Y2_IS_TMC2130
-  //#define Z_IS_TMC2130
+  #define Z_IS_TMC2130
   //#define Z2_IS_TMC2130
-  //#define E0_IS_TMC2130
+  #define E0_IS_TMC2130
   //#define E1_IS_TMC2130
   //#define E2_IS_TMC2130
   //#define E3_IS_TMC2130
@@ -612,12 +612,12 @@ const unsigned int dropsegments=5; //everything with less than this number of st
    * https://github.com/teemuatlut/TMC2208Stepper
    *
    * Example:
-   * #define TMC_ADV() { \
+   * #define TMC2130_ADV() { \
    *   stepperX.diag0_temp_prewarn(1); \
    *   stepperY.interpolate(0); \
    * }
    */
-  #define  TMC_ADV() {  }
+  #define  TMC2130_ADV() {  }
 
 #endif // TMC2130 || TMC2208
 
