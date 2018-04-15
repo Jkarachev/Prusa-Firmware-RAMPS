@@ -81,7 +81,7 @@
   #define LCD_COMMAND_IDLE 0
   #define LCD_COMMAND_LOAD_FILAMENT 1
   #define LCD_COMMAND_STOP_PRINT 2
-  #define LCD_COMMAND_FARM_MODE_CONFIRM 4
+
   #define LCD_COMMAND_LONG_PAUSE 5
   #define LCD_COMMAND_LONG_PAUSE_RESUME 6
   #define LCD_COMMAND_PID_EXTRUDER 7 
@@ -90,10 +90,6 @@
   extern unsigned long lcd_timeoutToStatus;
   extern int lcd_commands_type;
   
-  extern uint8_t farm_mode;
-  extern int farm_no;
-  extern int farm_timer;
-  extern int farm_status;
   extern int8_t SilentModeMenu;
 
 #ifdef SNMM
@@ -211,11 +207,9 @@ void lcd_printer_connected();
 void lcd_ping();
 
 void lcd_calibrate_extruder();
-void lcd_farm_sdcard_menu();
 
 //void getFileDescription(char *name, char *description);
 
-void lcd_farm_sdcard_menu_w();
 //void get_description();
 
 void lcd_wait_for_cool_down();

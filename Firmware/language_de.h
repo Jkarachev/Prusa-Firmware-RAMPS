@@ -254,8 +254,6 @@
 +//#define(length=20, lines=1)				"Reset E Cal."
 
 +#define(length = 20, lines = 8) MSG_E_CAL_KNOB						"Knopf drehen bis die Filamentmarkierung erreicht ist. Klicken wenn fertig."
-+
-+//#define(length=20, lines=1) MSG_FARM_CARD_MENU					"Farm mode print"
 
 +#define(length = 20, lines = 8) MSG_MARK_FIL						"Filament 100mm vom Extrudergehaeuse markieren. Klicken wenn Fertig."
 + #define(length = 20, lines = 8) MSG_CLEAN_NOZZLE_E				"E-Kalibrierung beendet. Bitte reinigen Sie die Duese. Klicken wenn fertig."

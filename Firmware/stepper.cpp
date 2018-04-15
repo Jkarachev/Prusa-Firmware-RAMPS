@@ -796,8 +796,8 @@ void isr() {
 
 void st_init()
 {
-  digipot_init(); //Initialize Digipot Motor Current
-  microstep_init(); //Initialize Microstepping Pins
+  // digipot_init(); //Initialize Digipot Motor Current
+  // microstep_init(); //Initialize Microstepping Pins
 
   // Init TMC2130 Steppers
   #ifdef HAVE_TMC2130
@@ -1185,7 +1185,7 @@ void digipot_init() //Initialize Digipot Motor Current
     pinMode(MOTOR_CURRENT_PWM_XY_PIN, OUTPUT);
     pinMode(MOTOR_CURRENT_PWM_Z_PIN, OUTPUT);
     pinMode(MOTOR_CURRENT_PWM_E_PIN, OUTPUT);
-    if((SilentMode == 0) || (farm_mode) ){
+    if((SilentMode == 0)) ){
 
      motor_current_setting[0] = motor_current_setting_loud[0];
      motor_current_setting[1] = motor_current_setting_loud[1];

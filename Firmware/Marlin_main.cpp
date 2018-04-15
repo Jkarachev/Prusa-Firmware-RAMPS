@@ -261,8 +261,6 @@ bool homing_flag = false;
 
 bool temp_cal_active = false;
 
-unsigned long kicktime = millis()+100000;
-
 unsigned int  usb_printing_counter;
 
 int lcd_change_fil_state = 0;
@@ -775,12 +773,12 @@ void enquecommand(const char *cmd, bool from_progmem)
             strcpy_P(cmdbuffer + bufindw + 1, cmd);
         else
             strcpy(cmdbuffer + bufindw + 1, cmd);
-		if (!farm_mode) {
+
 			SERIAL_ECHO_START;
 			SERIAL_ECHORPGM(MSG_Enqueing);
 			SERIAL_ECHO(cmdbuffer + bufindw + 1);
 			SERIAL_ECHOLNPGM("\"");
-		}
+
         bufindw += len + 2;
         if (bufindw == sizeof(cmdbuffer))
             bufindw = 0;
@@ -818,12 +816,12 @@ void enquecommand_front(const char *cmd, bool from_progmem)
         else
             strcpy(cmdbuffer + bufindr + 1, cmd);
         ++ buflen;
-		if (!farm_mode) {
+
 			SERIAL_ECHO_START;
 			SERIAL_ECHOPGM("Enqueing to the front: \"");
 			SERIAL_ECHO(cmdbuffer + bufindr + 1);
 			SERIAL_ECHOLNPGM("\"");
-		}
+
 #ifdef CMDBUFFER_DEBUG
         cmdqueue_dump_to_serial();
 #endif /* CMDBUFFER_DEBUG */
@@ -967,10 +965,6 @@ void factory_reset(char level, bool quiet)
             lcd_force_language_selection();
             // Force the "Follow calibration flow" message at the next boot up.
             calibration_status_store(CALIBRATION_STATUS_Z_CALIBRATION);
-            farm_no = 0;
-            farm_mode = 0;
-            eeprom_update_byte((uint8_t*)EEPROM_FARM_MODE, farm_mode);
-            EEPROM_save_B(EEPROM_FARM_NUMBER, &farm_no);
 
             WRITE(BEEPER, HIGH);
             _delay_ms(100);
@@ -1029,20 +1023,9 @@ void setup()
 	lcd_print_at_PGM(0, 2, PSTR("    3D  Printers    "));
 	setup_killpin();
 	setup_powerhold();
-	farm_mode = eeprom_read_byte((uint8_t*)EEPROM_FARM_MODE);
-	EEPROM_read_B(EEPROM_FARM_NUMBER, &farm_no);
-	if ((farm_mode == 0xFF && farm_no == 0) || ((uint16_t)farm_no == 0xFFFF))
-		farm_mode = false; //if farm_mode has not been stored to eeprom yet and farm number is set to zero or EEPROM is fresh, deactivate farm mode
-	if ((uint16_t)farm_no == 0xFFFF) farm_no = 0;
-	if (farm_mode)
-	{
-		prusa_statistics(8);
-		no_response = true; //we need confirmation by recieving PRUSA thx
-		important_status = 8;
-        selectedSerialPort = 1;
-	} else {
-        selectedSerialPort = 0;
-    }
+	
+  selectedSerialPort = 0;
+
 	MYSERIAL.begin(BAUDRATE);
 	SERIAL_PROTOCOLLNPGM("start");
 	SERIAL_ECHO_START;
@@ -1092,15 +1075,22 @@ void setup()
 	SERIAL_ECHORPGM(MSG_PLANNER_BUFFER_BYTES);
 	SERIAL_ECHOLN((int)sizeof(block_t)*BLOCK_BUFFER_SIZE);
 	lcd_update_enable(false);
+
 	// loads data from EEPROM if available else uses defaults (and resets step acceleration rate)
 	bool previous_settings_retrieved = Config_RetrieveSettings();
+
 	SdFatUtil::set_stack_guard(); //writes magic number at the end of static variables to protect against overwriting static memory by stack
 	tp_init();    // Initialize temperature loop
 	plan_init();  // Initialize planner;
 	watchdog_init();
 	st_init();    // Initialize stepper, this enables interrupts!
-	setup_photpin();
+	
+  #if defined(PHOTOGRAPH_PIN) && PHOTOGRAPH_PIN > -1
+    setup_photpin();
+  #endif
+
 	servo_init();
+
 	// Reset the machine correction matrix.
 	// It does not make sense to load the correction matrix until the machine is homed.
 	world2machine_reset();
@@ -1184,7 +1174,10 @@ void setup()
 #ifdef DIGIPOT_I2C
 	digipot_i2c_init();
 #endif
+
+#if defined(HOME_PIN) && HOME_PIN > -1
 	setup_homepin();
+#endif
 
 #if defined(Z_AXIS_ALWAYS_ON)
 	enable_z();
@@ -1362,7 +1355,6 @@ void serial_read_stream() {
 * while the machine is not accepting commands.
 */
 void host_keepalive() {
-  if (farm_mode) return;
   long ms = millis();
   if (host_keepalive_interval && busy_state != NOT_BUSY) {
     if ((ms - prev_busy_signal_ms) < (long)(1000L * host_keepalive_interval)) return;
@@ -1614,24 +1606,6 @@ void get_command()
     }
   } // end of serial line processing loop
 
-    if(farm_mode){
-        TimeNow = millis();
-        if ( ((TimeNow - TimeSent) > 800) && (serial_count > 0) ) {
-            cmdbuffer[bufindw+serial_count+1] = 0;
-
-            bufindw += strlen(cmdbuffer+bufindw+1) + 2;
-            if (bufindw == sizeof(cmdbuffer))
-                bufindw = 0;
-            ++ buflen;
-
-            serial_count = 0;
-
-            SERIAL_ECHOPGM("TIMEOUT:");
-            //memset(cmdbuffer, 0 , sizeof(cmdbuffer));
-            return;
-        }
-    }
-
 	//add comment
 	if (rx_buffer_full == true && serial_count > 0) {   //if rx buffer was full and string was not properly terminated
 		rx_buffer_full = false;
@@ -1679,12 +1653,6 @@ void get_command()
         lcd_setstatus(time);
         card.printingHasFinished();
         card.checkautostart(true);
-
-		if (farm_mode)
-		{
-			prusa_statistics(6);
-			lcd_commands_type = LCD_COMMAND_FARM_MODE_CONFIRM;
-		}
 
       }
       if(serial_char=='#')
@@ -2382,7 +2350,7 @@ void gcode_M701() {
 	plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], 100 / 60, active_extruder); //slow sequence
 	st_synchronize();
 
-	if (!farm_mode && loading_flag) {
+	if (loading_flag) {
 		bool clean = lcd_show_fullscreen_message_yes_no_and_wait_P(MSG_FILAMENT_CLEAN, false, true);
 
 		while (!clean) {
@@ -2559,34 +2527,12 @@ void process_commands()
 	  custom_message_type = 0;
   }
   else if(code_seen("PRUSA")){
-		if (code_seen("Ping")) {  //PRUSA Ping
-			if (farm_mode) {
-				PingTime = millis();
-				//MYSERIAL.print(farm_no); MYSERIAL.println(": OK");
-			}
-		} else if (code_seen("PRN")) {
+		if (code_seen("PRN")) {
 		  MYSERIAL.println(status_number);
 
-		} else if (code_seen("RESET")) {
-            // careful!
-            if (farm_mode) {
-                asm volatile("  jmp 0x3E000");
-            }
-            else {
-                MYSERIAL.println("Not in farm mode.");
-            }
-        } else if (code_seen("fn")) {
-		  if (farm_mode) {
-			  MYSERIAL.println(farm_no);
-		  }
-		  else {
-			  MYSERIAL.println("Not in farm mode.");
-		  }
-
-		}
-		else if (code_seen("thx")) {
+		} else if (code_seen("thx")) {
 			no_response = false;
-		}else if (code_seen("fv")) {
+		} else if (code_seen("fv")) {
         // get file version
         #ifdef SDSUPPORT
         card.openFile(strchr_pointer + 3,true);
@@ -2605,33 +2551,7 @@ void process_commands()
         trace();
         prusa_sd_card_upload = true;
         card.openFile(strchr_pointer+4,false);
-    } else if (code_seen("SN")) {
-        if (farm_mode) {
-            selectedSerialPort = 0;
-            MSerial.write(";S");
-            // S/N is:CZPX0917X003XC13518
-            int numbersRead = 0;
-
-            while (numbersRead < 19) {
-                while (MSerial.available() > 0) {
-                    uint8_t serial_char = MSerial.read();
-                    selectedSerialPort = 1;
-                    MSerial.write(serial_char);
-                    numbersRead++;
-                    selectedSerialPort = 0;
-                }
-            }
-            selectedSerialPort = 1;
-            MSerial.write('\n');
-            /*for (int b = 0; b < 3; b++) {
-                tone(BEEPER, 110);
-                delay(50);
-                noTone(BEEPER);
-                delay(50);
-            }*/
-        } else {
-            MYSERIAL.println("Not in farm mode.");
-        }
+ 
     } else if(code_seen("Fir")){
 
       SERIAL_PROTOCOLLN(FW_version);
@@ -2653,10 +2573,6 @@ void process_commands()
         MYSERIAL.println("SERIAL HIGH");
         MYSERIAL.begin(115200);
         return;
-    } else if(code_seen("Beat")) {
-        // Kick farm link timer
-        kicktime = millis();
-
     } else if(code_seen("FR")) {
         // Factory full reset
         factory_reset(0,true);
@@ -3136,8 +3052,6 @@ void process_commands()
 			goto case_G80;
 	  }
 #endif
-
-	  if (farm_mode) { prusa_statistics(20); };
 
 	  homing_flag = false;
 
@@ -3922,28 +3836,6 @@ void process_commands()
         }
       }
       break;
-
-	case 98: //activate farm mode
-		farm_mode = 1;
-		PingTime = millis();
-		EEPROM_save_B(EEPROM_FARM_NUMBER, &farm_no);
-		eeprom_update_byte((unsigned char *)EEPROM_FARM_MODE, farm_mode);
-
-		break;
-
-	case 99: //deactivate farm mode
-		farm_mode = 0;
-		lcd_printer_connected();
-		eeprom_update_byte((unsigned char *)EEPROM_FARM_MODE, farm_mode);
-		lcd_update(2);
-		break;
-
-
-
-
-
-
-
     }
   } // end if(code_seen('G'))
 
@@ -4624,8 +4516,7 @@ Sigma_Exit:
       }
       LCD_MESSAGERPGM(MSG_HEATING);
 	  heating_status = 1;
-	  if (farm_mode) { prusa_statistics(1); };
-
+	  
 #ifdef AUTOTEMP
         autotemp_enabled=false;
       #endif
@@ -4661,8 +4552,7 @@ Sigma_Exit:
         LCD_MESSAGERPGM(MSG_HEATING_COMPLETE);
 		KEEPALIVE_STATE(IN_HANDLER);
 		heating_status = 2;
-		if (farm_mode) { prusa_statistics(2); };
-
+		
         //starttime=millis();
         previous_millis_cmd = millis();
       }
@@ -4671,7 +4561,7 @@ Sigma_Exit:
     #if defined(TEMP_BED_PIN) && TEMP_BED_PIN > -1
         LCD_MESSAGERPGM(MSG_BED_HEATING);
 		heating_status = 3;
-		if (farm_mode) { prusa_statistics(1); };
+		
         if (code_seen('S'))
 		{
           setTargetBed(code_value());
@@ -4692,7 +4582,7 @@ Sigma_Exit:
         {
           if(( millis() - codenum) > 1000 ) //Print Temp Reading every 1 second while heating up.
           {
-			  if (!farm_mode) {
+
 				  float tt = degHotend(active_extruder);
 				  SERIAL_PROTOCOLPGM("T:");
 				  SERIAL_PROTOCOL(tt);
@@ -4701,7 +4591,7 @@ Sigma_Exit:
 				  SERIAL_PROTOCOLPGM(" B:");
 				  SERIAL_PROTOCOL_F(degBed(), 1);
 				  SERIAL_PROTOCOLLN("");
-			  }
+
 				  codenum = millis();
 
           }
@@ -5573,13 +5463,7 @@ case 404:  //M404 Enter the nominal filament width (3mm, 1.75mm ) N<3.0> or disp
 		float target[4];
 		float lastpos[4];
 
-        if (farm_mode)
 
-        {
-
-            prusa_statistics(22);
-
-        }
 
         feedmultiplyBckp=feedmultiply;
 
@@ -6479,102 +6363,102 @@ void handle_status_leds(void) {
 }
 #endif
 
-#if defined(HAVE_TMC2130)
+// #if defined(HAVE_TMC2130)
 
-  void automatic_current_control(TMC2130Stepper &st, String axisID) {
-    // Check otpw even if we don't use automatic control. Allows for flag inspection.
-    const bool is_otpw = st.checkOT();
+//   void automatic_current_control(TMC2130Stepper &st, String axisID) {
+//     // Check otpw even if we don't use automatic control. Allows for flag inspection.
+//     const bool is_otpw = st.checkOT();
 
-    // Report if a warning was triggered
-    static bool previous_otpw = false;
-    if (is_otpw && !previous_otpw) {
-      // char timestamp[10];
-      // duration_t elapsed = print_job_timer.duration();
-      // const bool has_days = (elapsed.value > 60*60*24L);
-      // (void)elapsed.toDigital(timestamp, has_days);
-      // SERIAL_ECHO(timestamp);
-      // SERIAL_ECHOPGM(": ");
-      SERIAL_ECHO(axisID);
-      SERIAL_ECHOLNPGM(" driver overtemperature warning!");
-    }
-    previous_otpw = is_otpw;
+//     // Report if a warning was triggered
+//     static bool previous_otpw = false;
+//     if (is_otpw && !previous_otpw) {
+//       // char timestamp[10];
+//       // duration_t elapsed = print_job_timer.duration();
+//       // const bool has_days = (elapsed.value > 60*60*24L);
+//       // (void)elapsed.toDigital(timestamp, has_days);
+//       // SERIAL_ECHO(timestamp);
+//       // SERIAL_ECHOPGM(": ");
+//       SERIAL_ECHO(axisID);
+//       SERIAL_ECHOLNPGM(" driver overtemperature warning!");
+//     }
+//     previous_otpw = is_otpw;
 
-    #if CURRENT_STEP > 0 && defined(AUTOMATIC_CURRENT_CONTROL)
-      // Return if user has not enabled current control start with M906 S1.
-      if (!auto_current_control) return;
+//     #if CURRENT_STEP > 0 && defined(AUTOMATIC_CURRENT_CONTROL)
+//       // Return if user has not enabled current control start with M906 S1.
+//       if (!auto_current_control) return;
 
-      /**
-       * Decrease current if is_otpw is true.
-       * Bail out if driver is disabled.
-       * Increase current if OTPW has not been triggered yet.
-       */
-      uint16_t current = st.getCurrent();
-      if (is_otpw) {
-        st.setCurrent(current - CURRENT_STEP, R_SENSE, HOLD_MULTIPLIER);
-        #if defined(REPORT_CURRENT_CHANGE)
-          SERIAL_ECHO(axisID);
-          SERIAL_ECHOPAIR(" current decreased to ", st.getCurrent());
-        #endif
-      }
+//       /**
+//        * Decrease current if is_otpw is true.
+//        * Bail out if driver is disabled.
+//        * Increase current if OTPW has not been triggered yet.
+//        */
+//       uint16_t current = st.getCurrent();
+//       if (is_otpw) {
+//         st.setCurrent(current - CURRENT_STEP, R_SENSE, HOLD_MULTIPLIER);
+//         #if defined(REPORT_CURRENT_CHANGE)
+//           SERIAL_ECHO(axisID);
+//           SERIAL_ECHOPAIR(" current decreased to ", st.getCurrent());
+//         #endif
+//       }
 
-      else if (!st.isEnabled())
-        return;
+//       else if (!st.isEnabled())
+//         return;
 
-      else if (!is_otpw && !st.getOTPW()) {
-        current += CURRENT_STEP;
-        if (current <= AUTO_ADJUST_MAX) {
-          st.setCurrent(current, R_SENSE, HOLD_MULTIPLIER);
-          #if defined(REPORT_CURRENT_CHANGE)
-            SERIAL_ECHO(axisID);
-            SERIAL_ECHOPAIR(" current increased to ", st.getCurrent());
-          #endif
-        }
-      }
-      SERIAL_EOL();
-    #endif
-  }
+//       else if (!is_otpw && !st.getOTPW()) {
+//         current += CURRENT_STEP;
+//         if (current <= AUTO_ADJUST_MAX) {
+//           st.setCurrent(current, R_SENSE, HOLD_MULTIPLIER);
+//           #if defined(REPORT_CURRENT_CHANGE)
+//             SERIAL_ECHO(axisID);
+//             SERIAL_ECHOPAIR(" current increased to ", st.getCurrent());
+//           #endif
+//         }
+//       }
+//       SERIAL_EOL();
+//     #endif
+//   }
 
-  void checkOverTemp() {
-    static unsigned long next_cOT = 0;
-    if (ELAPSED(millis(), next_cOT)) {
-      next_cOT = millis() + 5000;
-      #if defined(X_IS_TMC2130)
-        automatic_current_control(stepperX, "X");
-      #endif
-      #if defined(Y_IS_TMC2130)
-        automatic_current_control(stepperY, "Y");
-      #endif
-      #if defined(Z_IS_TMC2130)
-        automatic_current_control(stepperZ, "Z");
-      #endif
-      #if defined(X2_IS_TMC2130)
-        automatic_current_control(stepperX2, "X2");
-      #endif
-      #if defined(Y2_IS_TMC2130)
-        automatic_current_control(stepperY2, "Y2");
-      #endif
-      #if defined(Z2_IS_TMC2130)
-        automatic_current_control(stepperZ2, "Z2");
-      #endif
-      #if defined(E0_IS_TMC2130)
-        automatic_current_control(stepperE0, "E0");
-      #endif
-      #if defined(E1_IS_TMC2130)
-        automatic_current_control(stepperE1, "E1");
-      #endif
-      #if defined(E2_IS_TMC2130)
-        automatic_current_control(stepperE2, "E2");
-      #endif
-      #if defined(E3_IS_TMC2130)
-        automatic_current_control(stepperE3, "E3");
-      #endif
-      #if defined(E4_IS_TMC2130)
-        automatic_current_control(stepperE4, "E4");
-      #endif
-    }
-  }
+//   void checkOverTemp() {
+//     static unsigned long next_cOT = 0;
+//     if (ELAPSED(millis(), next_cOT)) {
+//       next_cOT = millis() + 5000;
+//       #if defined(X_IS_TMC2130)
+//         automatic_current_control(stepperX, "X");
+//       #endif
+//       #if defined(Y_IS_TMC2130)
+//         automatic_current_control(stepperY, "Y");
+//       #endif
+//       #if defined(Z_IS_TMC2130)
+//         automatic_current_control(stepperZ, "Z");
+//       #endif
+//       #if defined(X2_IS_TMC2130)
+//         automatic_current_control(stepperX2, "X2");
+//       #endif
+//       #if defined(Y2_IS_TMC2130)
+//         automatic_current_control(stepperY2, "Y2");
+//       #endif
+//       #if defined(Z2_IS_TMC2130)
+//         automatic_current_control(stepperZ2, "Z2");
+//       #endif
+//       #if defined(E0_IS_TMC2130)
+//         automatic_current_control(stepperE0, "E0");
+//       #endif
+//       #if defined(E1_IS_TMC2130)
+//         automatic_current_control(stepperE1, "E1");
+//       #endif
+//       #if defined(E2_IS_TMC2130)
+//         automatic_current_control(stepperE2, "E2");
+//       #endif
+//       #if defined(E3_IS_TMC2130)
+//         automatic_current_control(stepperE3, "E3");
+//       #endif
+//       #if defined(E4_IS_TMC2130)
+//         automatic_current_control(stepperE4, "E4");
+//       #endif
+//     }
+//   }
 
-#endif // HAVE_TMC2130
+// #endif // HAVE_TMC2130
 
 void manage_inactivity(bool ignore_stepper_queue/*=false*/) //default argument set in Marlin.h
 {
@@ -6662,9 +6546,9 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) //default argument s
       handle_status_leds();
   #endif
 
-  #if defined(HAVE_TMC2130)
-    checkOverTemp();
-  #endif
+  // #if defined(HAVE_TMC2130)
+  //   checkOverTemp();
+  // #endif
   
   check_axes_activity();
 }
@@ -6895,7 +6779,7 @@ void wait_for_heater(long codenum) {
 #endif //TEMP_RESIDENCY_TIME
 		if ((millis() - codenum) > 1000UL)
 		{ //Print Temp Reading and remaining time every 1 second while heating up/cooling down
-			if (!farm_mode) {
+
 				SERIAL_PROTOCOLPGM("T:");
 				SERIAL_PROTOCOL_F(degHotend(tmp_extruder), 1);
 				SERIAL_PROTOCOLPGM(" E:");
@@ -6912,7 +6796,7 @@ void wait_for_heater(long codenum) {
 				{
 					SERIAL_PROTOCOLLN("?");
 				}
-			}
+
 #else
 				SERIAL_PROTOCOLLN("");
 #endif

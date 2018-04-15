@@ -300,8 +300,6 @@ extern bool temp_cal_active;
 extern bool loading_flag;
 extern unsigned int usb_printing_counter;
 
-extern unsigned long kicktime;
-
 extern unsigned long total_filament_used;
 void save_statistics(unsigned long _total_filament_used, unsigned long _total_print_time);
 extern unsigned int heating_status;

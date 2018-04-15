@@ -257,7 +257,6 @@
 //#define(length=20, lines=1) MSG_RESET_CALIBRATE_E				"Reset E Cal."
 #define(length=20, lines=8) MSG_E_CAL_KNOB						"Rotate knob until mark reaches extruder body. Click when done."
 
-//#define(length=20, lines=1) MSG_FARM_CARD_MENU					"Farm mode print"
 #define(length=20, lines=8) MSG_MARK_FIL						"Mark filament 100mm from extruder body. Click when done."
 #define(length=20, lines=8) MSG_CLEAN_NOZZLE_E				"E calibration finished. Please clean the nozzle. Click when done."
 #define(length=20, lines=3) MSG_WAITING_TEMP				"Waiting for nozzle and bed cooling"

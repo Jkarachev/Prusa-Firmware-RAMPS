@@ -107,10 +107,7 @@ bool presort_flag = false;
 int lcd_commands_type=LCD_COMMAND_IDLE;
 int lcd_commands_step=0;
 bool isPrintPaused = false;
-uint8_t farm_mode = 0;
-int farm_no = 0;
-int farm_timer = 8;
-int farm_status = 0;
+
 unsigned long alert_timer = millis();
 bool printer_connected = true;
 
@@ -188,13 +185,10 @@ static void extr_unload_1();
 static void extr_unload_2();
 static void extr_unload_3();
 #endif
-static void lcd_disable_farm_mode();
 
 static void prusa_stat_printerstatus(int _status);
-static void prusa_stat_farm_number();
 static void prusa_stat_temperatures();
 static void prusa_stat_printinfo();
-static void lcd_farm_no();
 
 static void lcd_send_status();
 static void lcd_connect_printer();
@@ -439,27 +433,7 @@ static void lcd_status_screen()
     lcd_implementation_status_screen();
     //lcd_implementation_clear();
 
-	if (farm_mode)
-	{
-		farm_timer--;
-		if (farm_timer < 1)
-		{
-			farm_timer = 10;
-			prusa_statistics(0);
-		}
-		switch (farm_timer)
-		{
-		case 8:
-			prusa_statistics(21);
-			break;
-		case 5:
-			if (IS_SD_PRINTING)
-			{
-				prusa_statistics(20);
-			}
-			break;
-		}
-	} // end of farm_mode
+
 
 
 
@@ -542,10 +516,7 @@ static void lcd_status_screen()
     feedmultiply = 999;
 #endif //ULTIPANEL
 
-  /*if (farm_mode && !printer_connected) {
-	  lcd.setCursor(0, 3);
-	  lcd_printPGM(MSG_PRINTER_DISCONNECTED);
-  }*/
+  
 
 }
 
@@ -1230,48 +1201,6 @@ void lcd_commands()
 		lcd_commands_type = 0;
 	}
 
-	if (lcd_commands_type == LCD_COMMAND_FARM_MODE_CONFIRM)   /// farm mode confirm
-	{
-
-		if (lcd_commands_step == 0) { lcd_commands_step = 6; custom_message = true; }
-
-		if (lcd_commands_step == 1 && !blocks_queued())
-		{
-			lcd_confirm_print();
-			lcd_commands_step = 0;
-			lcd_commands_type = 0;
-		}
-		if (lcd_commands_step == 2 && !blocks_queued())
-		{
-			lcd_commands_step = 1;
-		}
-		if (lcd_commands_step == 3 && !blocks_queued())
-		{
-			lcd_commands_step = 2;
-		}
-		if (lcd_commands_step == 4 && !blocks_queued())
-		{
-			enquecommand_P(PSTR("G90"));
-			enquecommand_P(PSTR("G1 X"  STRINGIFY(X_CANCEL_POS) " Y" STRINGIFY(Y_CANCEL_POS) " E0 F7000"));
-			lcd_commands_step = 3;
-		}
-		if (lcd_commands_step == 5 && !blocks_queued())
-		{
-			lcd_commands_step = 4;
-		}
-		if (lcd_commands_step == 6 && !blocks_queued())
-		{
-			enquecommand_P(PSTR("G91"));
-			enquecommand_P(PSTR("G1 Z15 F1500"));
-			st_synchronize();
-			#ifdef SNMM
-			lcd_commands_step = 7;
-			#else
-			lcd_commands_step = 5;
-			#endif
-		}
-
-	}
 	if (lcd_commands_type == LCD_COMMAND_PID_EXTRUDER) {
 		char cmd1[30];
 		
@@ -2699,7 +2628,6 @@ void prusa_statistics(int _message, uint8_t _fil_nr) {
 		{
 			SERIAL_ECHO("{");
 			prusa_stat_printerstatus(4);
-			prusa_stat_farm_number();
 			prusa_stat_printinfo();
 			SERIAL_ECHOLN("}");
 			status_number = 4;
@@ -2708,37 +2636,28 @@ void prusa_statistics(int _message, uint8_t _fil_nr) {
 		{
 			SERIAL_ECHO("{");
 			prusa_stat_printerstatus(1);
-			prusa_stat_farm_number();
 			SERIAL_ECHOLN("}");
 			status_number = 1;
 		}
 		break;
 
 	case 1:		// 1 heating
-		farm_status = 2;
 		SERIAL_ECHO("{");
 		prusa_stat_printerstatus(2);
-		prusa_stat_farm_number();
 		SERIAL_ECHOLN("}");
 		status_number = 2;
-		farm_timer = 1;
 		break;
 
 	case 2:		// heating done
-		farm_status = 3;
 		SERIAL_ECHO("{");
 		prusa_stat_printerstatus(3);
-		prusa_stat_farm_number();
 		SERIAL_ECHOLN("}");
 		status_number = 3;
-		farm_timer = 1;
 
 		if (IS_SD_PRINTING)
 		{
-			farm_status = 4;
 			SERIAL_ECHO("{");
 			prusa_stat_printerstatus(4);
-			prusa_stat_farm_number();
 			SERIAL_ECHOLN("}");
 			status_number = 4;
 		}
@@ -2746,11 +2665,9 @@ void prusa_statistics(int _message, uint8_t _fil_nr) {
 		{
 			SERIAL_ECHO("{");
 			prusa_stat_printerstatus(3);
-			prusa_stat_farm_number();
 			SERIAL_ECHOLN("}");
 			status_number = 3;
 		}
-		farm_timer = 1;
 		break;
 
 	case 3:		// filament change
@@ -2761,79 +2678,63 @@ void prusa_statistics(int _message, uint8_t _fil_nr) {
 		MYSERIAL.print(int(_fil_nr));
 		SERIAL_ECHO("]");
 		prusa_stat_printerstatus(status_number);
-		prusa_stat_farm_number();
 		SERIAL_ECHOLN("}");
-		farm_timer = 2;
 		break;
 	case 5:		// print not succesfull
 		SERIAL_ECHO("{[RES:0][FIL:");
 		MYSERIAL.print(int(_fil_nr));
 		SERIAL_ECHO("]");
 		prusa_stat_printerstatus(status_number);
-		prusa_stat_farm_number();
 		SERIAL_ECHOLN("}");
-		farm_timer = 2;
 		break;
 	case 6:		// print done
 		SERIAL_ECHO("{[PRN:8]");
-		prusa_stat_farm_number();
 		SERIAL_ECHOLN("}");
 		status_number = 8;
-		farm_timer = 2;
 		break;
 	case 7:		// print done - stopped
 		SERIAL_ECHO("{[PRN:9]");
-		prusa_stat_farm_number();
+
 		SERIAL_ECHOLN("}");
 		status_number = 9;
-		farm_timer = 2;
 		break;
 	case 8:		// printer started
 		SERIAL_ECHO("{[PRN:0][PFN:");
 		status_number = 0;
-		SERIAL_ECHO(farm_no);
 		SERIAL_ECHOLN("]}");
-		farm_timer = 2;
-		break;
-	case 20:		// echo farm no
-		SERIAL_ECHO("{");
-		prusa_stat_printerstatus(status_number);
-		prusa_stat_farm_number();
-		SERIAL_ECHOLN("}");
-		farm_timer = 4;
 		break;
 	case 21: // temperatures
 		SERIAL_ECHO("{");
 		prusa_stat_temperatures();
-		prusa_stat_farm_number();
+
 		prusa_stat_printerstatus(status_number);
 		SERIAL_ECHOLN("}");
 		break;
     case 22: // waiting for filament change
         SERIAL_ECHO("{[PRN:5]");
-		prusa_stat_farm_number();
+
 		SERIAL_ECHOLN("}");
 		status_number = 5;
         break;
 	
 	case 90: // Error - Thermal Runaway
 		SERIAL_ECHO("{[ERR:1]");
-		prusa_stat_farm_number();
+
 		SERIAL_ECHOLN("}");
 		break;
 	case 91: // Error - Thermal Runaway Preheat
 		SERIAL_ECHO("{[ERR:2]");
-		prusa_stat_farm_number();
+
 		SERIAL_ECHOLN("}");
 		break;
 	case 92: // Error - Min temp
 		SERIAL_ECHO("{[ERR:3]");
-		prusa_stat_farm_number();
+
 		SERIAL_ECHOLN("}");
 		break;
 	case 93: // Error - Max temp
 		SERIAL_ECHO("{[ERR:4]");
-		prusa_stat_farm_number();
+
 		SERIAL_ECHOLN("}");
 		break;
 
@@ -2841,7 +2742,6 @@ void prusa_statistics(int _message, uint8_t _fil_nr) {
         SERIAL_ECHO("{[PRN:99]");
         prusa_stat_temperatures();
 		SERIAL_ECHO("[PFN:");
-		SERIAL_ECHO(farm_no);
 		SERIAL_ECHO("]");
         SERIAL_ECHOLN("}");
             
@@ -2854,12 +2754,6 @@ static void prusa_stat_printerstatus(int _status)
 {
 	SERIAL_ECHO("[PRN:");
 	SERIAL_ECHO(_status);
-	SERIAL_ECHO("]");
-}
-
-static void prusa_stat_farm_number() {
-	SERIAL_ECHO("[PFN:");
-	SERIAL_ECHO(farm_no);
 	SERIAL_ECHO("]");
 }
 
@@ -3483,14 +3377,14 @@ static void lcd_settings_menu()
 	  MENU_ITEM(gcode, MSG_DISABLE_STEPPERS, PSTR("M84"));
   }
     
-  if (!farm_mode) { //dont show in menu if we are in farm mode
-	  switch (SilentModeMenu) {
-	  case 0: MENU_ITEM(function, MSG_SILENT_MODE_OFF, lcd_silent_mode_set); break;
-	  case 1: MENU_ITEM(function, MSG_SILENT_MODE_ON, lcd_silent_mode_set); break;
-	  case 2: MENU_ITEM(function, MSG_AUTO_MODE_ON, lcd_silent_mode_set); break;
-	  default: MENU_ITEM(function, MSG_SILENT_MODE_OFF, lcd_silent_mode_set); break;
-	  }	  
-  }
+  
+	switch (SilentModeMenu) {
+	case 0: MENU_ITEM(function, MSG_SILENT_MODE_OFF, lcd_silent_mode_set); break;
+	case 1: MENU_ITEM(function, MSG_SILENT_MODE_ON, lcd_silent_mode_set); break;
+	case 2: MENU_ITEM(function, MSG_AUTO_MODE_ON, lcd_silent_mode_set); break;
+	default: MENU_ITEM(function, MSG_SILENT_MODE_OFF, lcd_silent_mode_set); break;
+	}	  
+
   
 	if (!isPrintPaused && !homing_flag)
 	{
@@ -3504,7 +3398,7 @@ static void lcd_settings_menu()
     MENU_ITEM(function, MSG_TOSHIBA_FLASH_AIR_COMPATIBILITY_OFF, lcd_toshiba_flash_air_compatibility_toggle);
   }
 #ifdef SDCARD_SORT_ALPHA
-  if (!farm_mode) {
+
 	  uint8_t sdSort;
 	  EEPROM_read(EEPROM_SD_SORT, (uint8_t*)&sdSort, sizeof(sdSort));
 	  switch (sdSort) {
@@ -3512,14 +3406,10 @@ static void lcd_settings_menu()
 	  case SD_SORT_ALPHA: MENU_ITEM(function, MSG_SORT_ALPHA, lcd_sort_type_set); break;
 	  default: MENU_ITEM(function, MSG_SORT_NONE, lcd_sort_type_set);
 	  }
-  }
+
 #endif // SDCARD_SORT_ALPHA
     
-    if (farm_mode)
-    {
-        MENU_ITEM(submenu, PSTR("Farm number"), lcd_farm_no);
-		MENU_ITEM(function, PSTR("Disable farm mode"), lcd_disable_farm_mode);
-    }
+
 
 	END_MENU();
 }
@@ -4029,19 +3919,7 @@ char reset_menu() {
 
 }
 
-static void lcd_disable_farm_mode() {
-	int8_t disable = lcd_show_fullscreen_message_yes_no_and_wait_P(PSTR("Disable farm mode?"), true, false); //allow timeouting, default no
-	if (disable) {
-		enquecommand_P(PSTR("G99"));
-		lcd_return_to_status();
-	}
-	else {
-		lcd_goto_menu(lcd_settings_menu);
-	}
-	lcd_update_enable(true);
-	lcdDrawUpdate = 2;
-	
-}
+
 
 #if 0
 static void lcd_ping_alert() {
@@ -4381,72 +4259,7 @@ static void change_extr_menu(){
 
 #endif
 
-static void lcd_farm_no()
-{
-	char step = 0;
-	int enc_dif = 0;
-	int _farmno = farm_no;
-	int _ret = 0;
-	lcd_implementation_clear();
 
-	lcd.setCursor(0, 0);
-	lcd.print("Farm no");
-
-	do
-	{
-
-		if (abs((enc_dif - encoderDiff)) > 2) {
-			if (enc_dif > encoderDiff) {
-				switch (step) {
-				case(0): if (_farmno >= 100) _farmno -= 100; break;
-				case(1): if (_farmno % 100 >= 10) _farmno -= 10; break;
-				case(2): if (_farmno % 10 >= 1) _farmno--; break;
-				default: break;
-				}
-			}
-
-			if (enc_dif < encoderDiff) {
-				switch (step) {
-				case(0): if (_farmno < 900) _farmno += 100; break;
-				case(1): if (_farmno % 100 < 90) _farmno += 10; break;
-				case(2): if (_farmno % 10 <= 8)_farmno++; break;
-				default: break;
-				}
-			}
-			enc_dif = 0;
-			encoderDiff = 0;
-		}
-
-		lcd.setCursor(0, 2);
-		if (_farmno < 100) lcd.print("0");
-		if (_farmno < 10) lcd.print("0");
-		lcd.print(_farmno);
-		lcd.print("  ");
-		lcd.setCursor(0, 3);
-		lcd.print("   ");
-
-
-		lcd.setCursor(step, 3);
-		lcd.print("^");
-		delay(100);
-
-		if (lcd_clicked())
-		{
-			delay(200);
-			step++;
-			if(step == 3) {
-				_ret = 1;
-				farm_no = _farmno;
-				EEPROM_save_B(EEPROM_FARM_NUMBER, &farm_no);
-				prusa_statistics(20);
-				lcd_return_to_status();
-			}
-		}
-
-		manage_heater();
-	} while (_ret == 0);
-
-}
 
 
 unsigned char lcd_choose_color() {
@@ -4704,8 +4517,7 @@ static void lcd_main_menu()
 	{
 		if (!is_usb_printing)
 		{
-			//if (farm_mode) MENU_ITEM(submenu, MSG_FARM_CARD_MENU, lcd_farm_sdcard_menu);
-			/*else*/ MENU_ITEM(submenu, MSG_CARD_MENU, lcd_sdcard_menu);
+			MENU_ITEM(submenu, MSG_CARD_MENU, lcd_sdcard_menu);
 		}
 #if SDCARDDETECT < 1
       MENU_ITEM(gcode, MSG_CNG_SDCARD, PSTR("M21"));  // SD-card changed by user
@@ -4721,15 +4533,8 @@ static void lcd_main_menu()
 #endif
 
 
-  if (IS_SD_PRINTING || is_usb_printing)
-  {
-	  if (farm_mode)
-	  {
-		  MENU_ITEM(submenu, PSTR("Farm number"), lcd_farm_no);
-	  }
-  } 
-  else 
-  {
+
+
 	#ifndef SNMM
     MENU_ITEM(function, MSG_LOAD_FILAMENT, lcd_LoadFilament);
     MENU_ITEM(function, MSG_UNLOAD_FILAMENT, lcd_unLoadFilament);
@@ -4741,7 +4546,7 @@ static void lcd_main_menu()
 	#endif
 	MENU_ITEM(submenu, MSG_SETTINGS, lcd_settings_menu);
     if(!isPrintPaused) MENU_ITEM(submenu, MSG_MENU_CALIBRATION, lcd_calibration_menu);
-  }
+
 
   if (!is_usb_printing)
   {
@@ -4804,14 +4609,13 @@ static void lcd_tune_menu()
   MENU_ITEM(function, MSG_FILAMENTCHANGE, lcd_colorprint_change);//7
 #endif
 
-  if (!farm_mode) { //dont show in menu if we are in farm mode //8
 	  switch (SilentModeMenu) {
 	  case 0: MENU_ITEM(function, MSG_SILENT_MODE_OFF, lcd_silent_mode_set_tune); break;
 	  case 1: MENU_ITEM(function, MSG_SILENT_MODE_ON, lcd_silent_mode_set_tune); break;
 	  case 2: MENU_ITEM(function, MSG_AUTO_MODE_ON, lcd_silent_mode_set_tune); break;
 	  default: MENU_ITEM(function, MSG_SILENT_MODE_OFF, lcd_silent_mode_set_tune); break;
 	  }
-  }
+
   END_MENU();
 }
 
@@ -4925,7 +4729,6 @@ void lcd_sdcard_stop()
 				lcd_return_to_status();
 				lcd_ignore_click(true);
 				lcd_commands_type = LCD_COMMAND_STOP_PRINT;
-				if (farm_mode) prusa_statistics(7);
                 // Turn off the print fan
                 SET_OUTPUT(FAN_PIN);
                 WRITE(FAN_PIN, 0);
@@ -4993,7 +4796,7 @@ void lcd_sdcard_menu()
   {
     if (_menuItemNr == _lineNr)
     {
-		uint16_t nr = ((sdSort == SD_SORT_NONE) || farm_mode || (sdSort == SD_SORT_TIME)) ? (fileCnt - 1 - i) : i;
+		uint16_t nr = ((sdSort == SD_SORT_NONE) || (sdSort == SD_SORT_TIME)) ? (fileCnt - 1 - i) : i;
 
 		#ifdef SDCARD_SORT_ALPHA
 		if (sdSort == SD_SORT_NONE) card.getfilename(nr);
@@ -6045,7 +5848,6 @@ void lcd_update(uint8_t lcdDrawUpdateOverride)
 	  lcd_next_update_millis = millis() + LCD_UPDATE_INTERVAL;
 	  }
 	if (!SdFatUtil::test_stack_integrity()) stack_error();
-	lcd_ping(); //check that we have received ping command if we are in farm mode
 	lcd_send_status();
 	if (lcd_commands_type == LCD_COMMAND_V2_CAL) lcd_commands();
 }
@@ -6055,12 +5857,7 @@ void lcd_printer_connected() {
 }
 
 static void lcd_send_status() {
-	if (farm_mode && no_response && ((millis() - NcTime) > (NC_TIME * 1000))) {
-		//send important status messages periodicaly
-		prusa_statistics(important_status, saved_filament_type);
-		NcTime = millis();
-		lcd_connect_printer();
-	}
+	
 };
 
 static void lcd_connect_printer() {
@@ -6097,18 +5894,7 @@ static void lcd_connect_printer() {
 }
 
 void lcd_ping() { //chceck if printer is connected to monitoring when in farm mode
-	if (farm_mode) {
-		bool empty = is_buffer_empty();
-		if ((millis() - PingTime) * 0.001 > (empty ? PING_TIME : PING_TIME_LONG)) { //if commands buffer is empty use shorter time period
-																							  //if there are comamnds in buffer, some long gcodes can delay execution of ping command
-																							  //therefore longer period is used
-			printer_connected = false;
-			//lcd_ping_alert(); //acustic signals
-		}
-		else {
-			lcd_printer_connected();
-		}
-	}
+
 }
 void lcd_ignore_click(bool b)
 {

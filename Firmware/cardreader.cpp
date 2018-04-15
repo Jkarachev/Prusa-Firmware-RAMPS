@@ -757,7 +757,7 @@ void CardReader::quicksort(uint8_t left, uint8_t right) {
 *  - Most RAM: Buffer the directory and return filenames from RAM
 */
 void CardReader::presort() {
-	if (farm_mode || IS_SD_INSERTED == false) return; //sorting is not used in farm mode
+	if (IS_SD_INSERTED == false) return;
 	uint8_t sdSort = eeprom_read_byte((uint8_t*)EEPROM_SD_SORT);
 	
 	if (sdSort == SD_SORT_NONE) return; //sd sort is turned off

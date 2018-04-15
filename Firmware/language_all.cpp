@@ -1033,11 +1033,6 @@ const char * const MSG_FAN_SPEED_LANG_TABLE[LANG_NUM] PROGMEM = {
 	MSG_FAN_SPEED_DE
 };
 
-const char MSG_FARM_CARD_MENU_EN[] PROGMEM = "Farm mode print";
-const char * const MSG_FARM_CARD_MENU_LANG_TABLE[1] PROGMEM = {
-	MSG_FARM_CARD_MENU_EN
-};
-
 const char MSG_FILAMENTCHANGE_EN[] PROGMEM = "Change filament";
 const char MSG_FILAMENTCHANGE_CZ[] PROGMEM = "Vymenit filament";
 const char MSG_FILAMENTCHANGE_IT[] PROGMEM = "Camb. filamento";
