@@ -120,10 +120,10 @@
     #define E1_ENABLE_PIN      30
 
     // Stepper chip selects
-    #define X_CS_PIN           53
-    #define Y_CS_PIN           49
-    #define Z_CS_PIN           40
-    #define E0_CS_PIN          42
+    #define X_CS_PIN           63
+    #define Y_CS_PIN           40
+    #define Z_CS_PIN           42
+    #define E0_CS_PIN          65
     #define E1_CS_PIN          44
 
 #if MB(RAMPS_13_EEB)  //FMM added for Filament Extruder

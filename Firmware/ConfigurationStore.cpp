@@ -31,7 +31,52 @@ void _EEPROM_readData(int &pos, uint8_t* value, uint8_t size)
 #define EEPROM_READ_VAR(pos, value) _EEPROM_readData(pos, (uint8_t*)&value, sizeof(value))
 //======================================================================================
 
-
+/**
+ *  EEPROM Layout:
+ *  020 version
+ *  024 axis_steps_per_unit
+ *  040 max_feedrate
+ *  056 max_acceleration_units_per_sq_second
+ *  072 acceleration
+ *  076 retract_acceleration
+ *  080 minimumfeedrate
+ *  084 mintravelfeedrate
+ *  088 minsegmenttime
+ *  092 max_jerk[X_AXIS]
+ *  096 max_jerk[Y_AXIS]
+ *  100 max_jerk[Z_AXIS]
+ *  104 max_jerk[E_AXIS]
+ *  108 add_homing
+ *  120 zprobe_zoffset
+ *  124 Kp
+ *  128 Ki
+ *  132 Kd
+ *  136 bedKp
+ *  140 bedKi
+ *  144 bedKd
+ *  148 lcd_contrast
+ *  150 autoretract_enabled
+ *  151 retract_length
+ *  155 retract_feedrate
+ *  159 retract_zlift
+ *  163 retract_recover_length
+ *  167 retract_recover_feedrate
+ *  171 volumetric_enabled
+ *  172 filament_size
+ * 
+ * HAVE_TMC2130:
+ *  ??? Stepper X current
+ *  ??? Stepper Y current
+ *  ??? Stepper Z current
+ *  ???
+ *  ???
+ *  ???
+ *  ??? Stepper E0 current
+ *  ??? Stepper E1 current
+ *  ???
+ *  ???
+ *  ???
+ */
 
 
 #define EEPROM_OFFSET 20

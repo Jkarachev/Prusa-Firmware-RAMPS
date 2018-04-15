@@ -465,12 +465,12 @@ const unsigned int dropsegments=5; //everything with less than this number of st
  * You'll also need the TMC2208Stepper Arduino library
  * (https://github.com/teemuatlut/TMC2208Stepper).
  */
-//#define HAVE_TMC2208
+// #define HAVE_TMC2208
 
 #if ENABLED(HAVE_TMC2130) || ENABLED(HAVE_TMC2208)
 
   // CHOOSE YOUR MOTORS HERE, THIS IS MANDATORY
-  //#define X_IS_TMC2130
+  #define X_IS_TMC2130
   //#define X2_IS_TMC2130
   //#define Y_IS_TMC2130
   //#define Y2_IS_TMC2130
