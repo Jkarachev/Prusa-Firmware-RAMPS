@@ -3,6 +3,7 @@
 
 #include "boards.h"
 #include "Configuration_prusa.h"
+#include "Configuration.h"
 
 #define LARGE_FLASH true
 
@@ -117,6 +118,13 @@
     #define E1_STEP_PIN        36
     #define E1_DIR_PIN         34
     #define E1_ENABLE_PIN      30
+
+    // Stepper chip selects
+    #define X_CS_PIN           53
+    #define Y_CS_PIN           49
+    #define Z_CS_PIN           40
+    #define E0_CS_PIN          42
+    #define E1_CS_PIN          44
 
 #if MB(RAMPS_13_EEB)  //FMM added for Filament Extruder
 #ifdef FILAMENT_SENSOR
